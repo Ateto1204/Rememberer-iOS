@@ -10,7 +10,7 @@ struct ContentView: View {
             VStack{
                 if texts.count > 0 {
                     List {
-                        ForEach(texts) {text in 
+                        ForEach(texts) { text in 
                             NavigationLink (
                                 destination: ScrollView { Text(text.content)}, 
                                 label: {
@@ -23,25 +23,23 @@ struct ContentView: View {
                         .font(.title)
                 }
             }
-                .navigationTitle("Scan OCR")
-                .navigationBarItems(trailing: 
-                    Button(action: {
+            .navigationTitle("Scan OCR")
+            .navigationBarItems(trailing: 
+                Button(action: {
                     self.showScannerSheet = true
                 }, label: {
                     Image(systemName: "doc.text.viewfinder")
                         .font(.title)
                 })
-                .sheet(isPresented: 
-                        $showScannerSheet, content: {
+                .sheet(isPresented: $showScannerSheet, content: {
                     makeScannerView()
                 })
-                )
+            )
         }
     }
     
     private func makeScannerView() -> ScannerView {
-        ScannerView(completion: {
-            textPerPage in 
+        ScannerView(completion: { textPerPage in 
             if let outputText = textPerPage?.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines) {
                 let newScanData = ScanData(content: outputText)
                 self.texts.append(newScanData)
