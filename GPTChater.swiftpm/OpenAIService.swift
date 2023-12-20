@@ -4,49 +4,40 @@ import Combine
 
 class OpenAIService {
     
-    let baseURL = "https://api.openai.com/v1/"
+    let endpointURL = "https://api.openai.com/v1/chat/completions"
     
-    func sendMessage(message: String) -> AnyPublisher<OpenAICompletionsResponse, Error> {
-        let body = OpenAICompletionsBody(model: "davinci-002", prompt: message, temperature: 0.7) 
-     
+    func sendMessage(messages: [Message]) async -> OpenAIChatResponse? {
+        let openAIMessages = messages.map({OpenAIChatMessage(role: $0.role, content: $0.content)})
+        
+        let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k", messages: openAIMessages)
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(Constants.openAIAPIKey)"
         ]
-        
-        return Future { [weak self] promise in 
-            
-            guard let self = self else { return }
-            
-            AF.request(self.baseURL + "completions", method: .post, parameters: body, encoder: .json, headers: headers)
-                .responseDecodable(of: OpenAICompletionsResponse.self) { response in 
-                    
-                    print("response.result")
-                    
-                    switch response.result {
-                    case .success(let result): 
-                        promise(.success(result))
-                        
-                    case .failure(let error): 
-                        promise(.failure(error))
-                    }
-                    
-                }
-        }
-        .eraseToAnyPublisher()
+        return try? await AF.request(endpointURL, method: .post, parameters: body, encoder: .json, headers: headers).serializingDecodable(OpenAIChatResponse.self).value
     }
+    
 }
 
-struct OpenAICompletionsBody: Encodable {
+struct OpenAIChatBody: Encodable {
     let model: String
-    let prompt: String
-    let temperature: Float?
+    let messages: [OpenAIChatMessage]
 }
 
-struct OpenAICompletionsResponse: Decodable {
-    let id: String
-    let choices: [OpenAICompletionsChoice]
+struct OpenAIChatMessage: Codable {
+    let role: SenderRole
+    let content: String
 }
 
-struct OpenAICompletionsChoice: Decodable {
-    let text: String
+enum SenderRole: String, Codable {
+    case system
+    case user
+    case assistant
+}
+
+struct OpenAIChatResponse: Decodable {
+    let choices: [OpenAIChatChoice]
+}
+
+struct OpenAIChatChoice: Decodable {
+    let message: OpenAIChatMessage
 }
