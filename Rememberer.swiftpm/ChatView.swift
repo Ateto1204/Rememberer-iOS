@@ -7,12 +7,14 @@ struct ChatView: View {
     @State private var firstToSend: Bool = true
     @State private var hasGetAnswer: Bool = false
     @State private var hasGetReason: Bool = false
+    
     let asking: String = "Generate one more multiple choice questions"
+    let format: String = "In addition, the format of the choice question must follow this:\nComponent: \n(the question)\nComponent: \n(the choices)\nComponent: \n(the answer)\nComponent: \n    (the explanation)"
     let getAnswer: String = "Give me only the choice of the answer (A, B, C or D)"
     let reasonOfAnswer: String = "Why?"
     
     init(content: String) {
-        let prompt = "\(asking) based on the following: \n \(content)"
+        let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
         self.viewModel = ViewModel(initString: prompt)
     }
     
@@ -76,16 +78,4 @@ struct ChatView: View {
         }
     }
     
-}
-
-struct ChatMessage {
-    let id: String
-    let content: String
-    let dataCreated: Date
-    let sender: MessageSender
-}
-
-enum MessageSender {
-    case gpt
-    case me
 }

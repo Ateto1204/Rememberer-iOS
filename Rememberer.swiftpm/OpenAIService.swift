@@ -6,16 +6,42 @@ class OpenAIService {
     
     let endpointURL = "https://api.openai.com/v1/chat/completions"
     
-    func sendMessage(messages: [Message]) async -> OpenAIChatResponse? {
-        let openAIMessages = messages.map({OpenAIChatMessage(role: $0.role, content: $0.content)})
-        
+    func sendMessage(messages: [Message], completion: @escaping (OpenAIChatResponse?) -> Void) {
+        let openAIMessages = messages.map({ OpenAIChatMessage(role: $0.role, content: $0.content) })
         let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k", messages: openAIMessages)
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(Constants.openAIAPIKey)"
-        ]
-        return try? await AF.request(endpointURL, method: .post, parameters: body, encoder: .json, headers: headers).serializingDecodable(OpenAIChatResponse.self).value
+        
+        guard let url = URL(string: endpointURL) else {
+            completion(nil)
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(Constants.openAIAPIKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let requestBody = try JSONEncoder().encode(body)
+            request.httpBody = requestBody
+        } catch {
+            completion(nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(nil)
+                return
+            }
+            
+            do {
+                let openAIResponse = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
+                completion(openAIResponse)
+            } catch {
+                completion(nil)
+            }
+        }.resume()
     }
-    
 }
 
 struct OpenAIChatBody: Encodable {
