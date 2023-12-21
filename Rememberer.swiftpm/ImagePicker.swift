@@ -57,6 +57,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             print("cancelled")
+            parent.isPickerShowing = false
         }
     }
 }

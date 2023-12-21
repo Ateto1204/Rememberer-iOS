@@ -12,10 +12,12 @@ struct ContentView: View {
             VStack {
                 
                 HStack {
+                    Text("Select from")
+                    
                     Button {
                         self.showScannerSheet = true
                     } label: {
-                        Text("Open Camera")
+                        Text("Camera")
                     }
                     .sheet(isPresented: $showScannerSheet, content: {
                         makeScannerView()
@@ -26,7 +28,7 @@ struct ContentView: View {
                     Button {
                         self.isPickerShowing = true
                     } label: {
-                        Text("Select from Photo")
+                        Text("Photo")
                     }
                     .sheet(isPresented: $isPickerShowing, content: {
                         photoScanner()
@@ -38,12 +40,13 @@ struct ContentView: View {
                 
                 if texts.count > 0 {
                     List {
-                        ForEach(texts) {text in 
-                            NavigationLink (
-                                destination: ScrollView { Text(text.content)}, 
-                                label: {
-                                    Text(text.content).lineLimit(1)
-                                })
+                        ForEach(texts) { text in 
+                            NavigationLink {
+                                ResultView(content: text.content)
+                                    .navigationTitle(text.content)
+                            } label: {
+                                Text(text.content).lineLimit(3)
+                            }
                         }
                     }
                 } else {
