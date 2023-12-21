@@ -1,5 +1,3 @@
-// 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
-
 import SwiftUI
 import Combine
 
