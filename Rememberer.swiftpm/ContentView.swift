@@ -4,11 +4,13 @@ struct ContentView: View {
     
     @State private var showScannerSheet = false
     @State private var texts:[ScanData] = []
+    @State private var content: String = ""
     @State var isPickerShowing = false
     @State var selectedImage: UIImage?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
+            
             VStack {
                 
                 HStack {
@@ -43,7 +45,6 @@ struct ContentView: View {
                         ForEach(texts) { text in 
                             NavigationLink {
                                 ResultView(content: text.content)
-                                    .navigationTitle(text.content)
                             } label: {
                                 Text(text.content).lineLimit(3)
                             }

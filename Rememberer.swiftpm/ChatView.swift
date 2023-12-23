@@ -7,10 +7,11 @@ struct ChatView: View {
     @State private var firstToSend: Bool = true
     @State private var hasGetAnswer: Bool = false
     @State private var hasGetReason: Bool = false
+    @State private var tmp: String = "default"
     
     let asking: String = "Generate one more multiple choice questions"
-    let format: String = "In addition, the format of the choice question must follow this:\nComponent: \n(the question)\nComponent: \n(the choices)\nComponent: \n(the answer)\nComponent: \n    (the explanation)"
-    let getAnswer: String = "Give me only the choice of the answer (A, B, C or D)"
+    let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words ans must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
+    let getAnswer: String = "Tell me the answer that only include the capital A, B, C or D"
     let reasonOfAnswer: String = "Why?"
     
     init(content: String) {
@@ -22,8 +23,17 @@ struct ChatView: View {
         VStack {
             ScrollView {
                 LazyVStack {
-                    ForEach(viewModel.messages.filter({$0.role != .system}), id: \.id) { message in 
-                        messageView(message: message)
+                    Text(viewModel.response)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(.blue)
+                    
+                    if viewModel.hasResponse {
+                        questionView(content: viewModel.response)
+                    } else {
+                        Text("Generating...")
+                            .foregroundColor(.white)
+                            .padding()
                     }
                 }
             }
@@ -75,6 +85,41 @@ struct ChatView: View {
                 .cornerRadius(15)
             
             if message.role == .assistant { Spacer() }
+        }
+    }
+    
+    func questionView(content: String) -> some View {
+        
+        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        
+        guard components.count >= 4 else {
+            print("Retry")
+            return questionView(content: content)
+        }
+        
+        let question: String = components[0]
+        let choices: [String] = components[1].components(separatedBy: .newlines)
+        let ans: String = components[2]
+        let explanation: String = components[3]
+        
+        return VStack(alignment: .leading) {
+
+            Text(question)
+            
+            ForEach(choices.indices) { idx in 
+                if !choices[idx].isEmpty {
+                    Button {
+                        
+                    } label: {
+                        Text(choices[idx])
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(.gray.opacity(0.1))
+                            .cornerRadius(12)
+                    }
+                }
+            }
+
         }
     }
     
