@@ -8,7 +8,7 @@ class OpenAIService {
     
     func sendMessage(messages: [Message], completion: @escaping (OpenAIChatResponse?) -> Void) {
         let openAIMessages = messages.map({ OpenAIChatMessage(role: $0.role, content: $0.content) })
-        let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k", messages: openAIMessages)
+        let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k-0613", messages: openAIMessages)
         
         guard let url = URL(string: endpointURL) else {
             completion(nil)

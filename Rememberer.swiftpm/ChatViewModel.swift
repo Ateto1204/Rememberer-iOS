@@ -9,7 +9,6 @@ extension ChatView {
         @Published var hasResponse: Bool = false
         private let openAIService = OpenAIService()
         
-        
         init(initString: String) {
             self.currentInput = initString
         }
@@ -39,26 +38,12 @@ extension ChatView {
                 print("receive: \(self.response)")
                 self.hasResponse = true
                 
-                
                 DispatchQueue.main.async {
                     self.messages.append(receiveMessage)
                 }
             }
         }
         
-        func questionView(content: String) {
-            
-            let components: [String] = content.components(separatedBy: "Component: ")
-            
-            let question: String = components[0]
-            let choices: [String] = components[1].components(separatedBy: .newlines)
-            let ans: String = components[2]
-            let explanation: String = components[3]
-            
-//            ScrollView {
-//                
-//            }
-        }
     }
 }
 
