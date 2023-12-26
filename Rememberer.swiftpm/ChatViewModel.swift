@@ -1,7 +1,9 @@
 import Foundation
 import Network
 
+@available(iOS 17.0, *)
 extension ChatView {
+    
     class ViewModel: ObservableObject {
         
         @Published var messages: [Message] = []

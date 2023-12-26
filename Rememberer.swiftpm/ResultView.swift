@@ -1,24 +1,30 @@
 import SwiftUI
 
+@available(iOS 17.0, *)
 struct ResultView: View {
     
     let content: String
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                Text(content)
-                    .padding()
+            ZStack(alignment: .bottom) {
+                ScrollView(showsIndicators: false) {
+                    Spacer()
+                        .frame(height: 0)
+                    Text(content)
+                        .padding()
+                }
+                
                 NavigationLink {
                     ChatView(content: content)
                 } label: {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .frame(width: 75, height: 50)
-                        Text("Submit")
-                            .foregroundColor(.white)
-                    }
+                    Text("Start")
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.accentColor.opacity(0.83))
+                        .cornerRadius(12)
                 }
+                .padding()
             }
         }
     }

@@ -1,6 +1,8 @@
 import SwiftUI
 import Combine
 
+
+@available(iOS 17.0, *)
 struct ChatView: View {
     
     @ObservedObject var viewModel: ViewModel
@@ -8,7 +10,7 @@ struct ChatView: View {
     
     @State var showExplanation: Bool = false
     let asking: String = "Generate one more multiple choice questions"
-    let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words ans must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
+    let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words and must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
     
     @State var showingHUD: Bool = false
     @State var isAnimating: Bool = false
@@ -25,27 +27,35 @@ struct ChatView: View {
         if networkManager.isNetworkAvailable {
             ZStack (alignment: .bottom) {
                 VStack {
-                    LazyVStack {
                         
-                        if viewModel.hasResponse {
-                            if !viewModel.response.isEmpty {
+                    if viewModel.hasResponse {
+                        if !viewModel.response.isEmpty {
+                            VStack {
                                 questionView(content: viewModel.response, retry: 0)
-                                    .padding(.top)
+                                Spacer()
+                                Spacer()
                             }
-                        } else if viewModel.requestCrash {
-                            ContentUnavailableView("Generating Fail", systemImage: "exclamationmark.triangle.fill")
-                        } else {
+                        }
+                    } else if viewModel.requestCrash {
+//                            ContentUnavailableView(description: "Generating Fail", systemImage: "exclamationmark.triangle.fill")
+                        ContentUnavailableView("Generating Fail", systemImage: "exclamationmark.triangle.fill")
+                    } else {
+                        VStack {
+                            Spacer()
+//                                ProgressView()
+//                                ContentUnavailableView(description: "Generating", systemImage: "")
                             ContentUnavailableView(label: {
                                 ProgressView()
                             }, description: {
                                 Text("Generating...")
                             })
+                            Spacer()
+                            Spacer()
                         }
                     }
-                    
                     Spacer()
                 }
-                .padding(.top)
+                .padding(.top, 5)
                 .onAppear(perform: {
                     viewModel.sendMessage()
                 })
@@ -75,6 +85,18 @@ struct ChatView: View {
                     .transition(AnyTransition.move(edge: .bottom).combined(with: .opacity))
                     .padding(.bottom)
                 }
+                
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Text("@All the info are from GPT.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 8)
+                            .padding(.trailing, 12)
+                    }
+                }
             }
         } else {
             ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
@@ -88,6 +110,7 @@ struct ChatView: View {
         guard components.count >= 4 else {
             print("Retry: \(components.count)")
             if retry > 8 {
+                print("Resend")
                 return Text("")
                 .onAppear(perform: {
                     viewModel.sendMessage()
@@ -101,6 +124,7 @@ struct ChatView: View {
         
         guard choices.count >= 4 else {
             if retry > 8 {
+                print("Resend")
                 return Text("")
                 .onAppear(perform: {
                     viewModel.sendMessage()
@@ -113,32 +137,54 @@ struct ChatView: View {
         let explanation: String = components[3]
         
         
-        return VStack(alignment: .leading) {
+        return VStack(alignment: .leading, spacing: 5) {
             
-            HStack {
-                Spacer()
-                VStack {
-                    Text("Question")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.bottom, 8)
-                    
-                    Text(question)
-                        .fontWeight(.semibold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(Color.primary)
-                        .font(.title3)
-                        .transition(.scale)
-                        .lineSpacing(1.5)
-                        .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
+            Button {
+                showExplanation = true
+            } label: {
+                HStack {
+                    Spacer()
+                    VStack {
+                        Text("Question")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 8)
+                        
+                        Text(question)
+                            .fontWeight(.semibold)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(Color.primary)
+                            .font(.title3)
+                            .transition(.scale)
+                            .lineSpacing(1.5)
+                            .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
+                            .padding(.leading)
+                    }
+                    .padding(30)
+                    Spacer()
                 }
-                .padding(30)
-                Spacer()
+                .frame(height: 250)
+                .background(Color(uiColor: .secondarySystemBackground))
+                .cornerRadius(10)
+                .padding()
             }
-            .frame(height: 250)
-            .background(Color(uiColor: .secondarySystemBackground))
-            .cornerRadius(10)
-                
+            .sheet(isPresented: $showExplanation, content: {
+                VStack {
+                    Text("Expanation")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                        .padding()
+                    Text(ans)
+                    Text(explanation)
+                        .padding()
+                    Button {
+                        viewModel.sendMessage()
+                    } label: {
+                        Text("Next")
+                    }
+                }
+            })
+            
             ForEach(choices.indices) { idx in 
                 if idx < choices.count && !choices[idx].isEmpty {
                     Button {
@@ -180,23 +226,19 @@ struct ChatView: View {
                             Text(choices[idx])
                                 .font(.callout)
                                 .foregroundColor(.accentColor)
+                                .padding(EdgeInsets())
                             Spacer()
                         }
                         .padding(12)
                         .background(Color.accentColor.opacity(0.13))
                         .cornerRadius(12)
+                        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                     }
                     .padding(3)
                 }
             }
             
             Spacer()
-            
-            Button {
-                
-            } label: {
-                
-            }
         }
         .disabled(isAnimating)
     }
