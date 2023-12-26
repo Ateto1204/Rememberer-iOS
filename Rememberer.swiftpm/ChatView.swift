@@ -4,7 +4,9 @@ import Combine
 struct ChatView: View {
     
     @ObservedObject var viewModel: ViewModel
+    @ObservedObject var networkManager: NetworkManager
     
+    @State var showExplanation: Bool = false
     let asking: String = "Generate one more multiple choice questions"
     let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words ans must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
     
@@ -16,58 +18,66 @@ struct ChatView: View {
     init(content: String) {
         let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
         self.viewModel = ViewModel(initString: prompt)
+        self.networkManager = NetworkManager()
     }
     
     var body: some View {
-        ZStack (alignment: .bottom) {
-            VStack {
-                LazyVStack {
-                    
-                    if viewModel.hasResponse {
-                        if !viewModel.response.isEmpty {
-                            questionView(content: viewModel.response, retry: 0)
+        if networkManager.isNetworkAvailable {
+            ZStack (alignment: .bottom) {
+                VStack {
+                    LazyVStack {
+                        
+                        if viewModel.hasResponse {
+                            if !viewModel.response.isEmpty {
+                                questionView(content: viewModel.response, retry: 0)
+                                    .padding(.top)
+                            }
+                        } else if viewModel.requestCrash {
+                            ContentUnavailableView("Generating Fail", systemImage: "exclamationmark.triangle.fill")
                         } else {
-                            Text("The response is empty")
+                            ContentUnavailableView(label: {
+                                ProgressView()
+                            }, description: {
+                                Text("Generating...")
+                            })
                         }
-                    } else {
-                        Text("Generating...")
-                            .foregroundColor(.white)
-                            .padding()
                     }
+                    
+                    Spacer()
                 }
+                .padding(.top)
+                .onAppear(perform: {
+                    viewModel.sendMessage()
+                })
                 
-                Spacer()
-            }
-            .padding(.top)
-            .onAppear(perform: {
-                viewModel.sendMessage()
-            })
-            
-            if showingHUD {
-                HUD {
-                    if(self.currentAnswerIsCorrect) {
-                        HStack(spacing: 25) {
+                if showingHUD {
+                    HUD {
+                        if(self.currentAnswerIsCorrect) {
+                            HStack(spacing: 25) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text("That's correct")
+                                        .padding(.leading, 5)
+                                        .foregroundColor(Color.primary)
+                                }
+                            }
+                        } else {
                             HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
-                                Text("That's correct")
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                                Text("That's wrong, try again")
                                     .padding(.leading, 5)
-                                    .foregroundColor(Color.primary)
                             }
                         }
-                    } else {
-                        HStack {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text("That's wrong, try again")
-                                .padding(.leading, 5)
-                        }
                     }
+                    .zIndex(1)
+                    .transition(AnyTransition.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.bottom)
                 }
-                .zIndex(1)
-                .transition(AnyTransition.move(edge: .bottom).combined(with: .opacity))
-                .padding(.bottom)
             }
+        } else {
+            ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
         }
     }
     
@@ -78,14 +88,7 @@ struct ChatView: View {
         guard components.count >= 4 else {
             print("Retry: \(components.count)")
             if retry > 8 {
-                return VStack {
-                    ForEach(components.indices) { idx in 
-                        Text(components[idx])
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(.gray)
-                    }
-                }
+                return Text("")
                 .onAppear(perform: {
                     viewModel.sendMessage()
                 })
@@ -98,16 +101,8 @@ struct ChatView: View {
         
         guard choices.count >= 4 else {
             if retry > 8 {
-                return VStack {
-                    ForEach(choices.indices) { idx in 
-                        Text(choices[idx])
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(.yellow)
-                    }
-                }
+                return Text("")
                 .onAppear(perform: {
-                    
                     viewModel.sendMessage()
                 })
             }
@@ -193,6 +188,14 @@ struct ChatView: View {
                     }
                     .padding(3)
                 }
+            }
+            
+            Spacer()
+            
+            Button {
+                
+            } label: {
+                
             }
         }
         .disabled(isAnimating)

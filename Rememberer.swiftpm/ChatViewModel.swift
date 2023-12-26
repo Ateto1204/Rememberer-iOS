@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 extension ChatView {
     class ViewModel: ObservableObject {
@@ -7,6 +8,7 @@ extension ChatView {
         @Published var currentInput: String = ""
         @Published var response: String = ""
         @Published var hasResponse: Bool = false
+        @Published var requestCrash: Bool = false
         private let openAIService = OpenAIService()
         
         init(initString: String) {
@@ -28,7 +30,8 @@ extension ChatView {
             openAIService.sendMessage(messages: messages) { [weak self] response in 
                 guard let self = self, let receiveOpenAIMessage = response?.choices.first?.message else {
                     print("Had no received message")
-                    self?.sendMessage()
+                    self?.requestCrash = true
+//                    self?.sendMessage()
                     return 
                 }
                 
@@ -44,6 +47,18 @@ extension ChatView {
             }
         }
         
+    }
+    
+    class NetworkManager: ObservableObject {
+        let monitor = NWPathMonitor()
+        @Published var isNetworkAvailable: Bool = false
+        
+        init() {
+            monitor.pathUpdateHandler = { path in 
+                self.isNetworkAvailable = path.status == .satisfied
+            }
+            monitor.start(queue: DispatchQueue.global())
+        }
     }
 }
 
