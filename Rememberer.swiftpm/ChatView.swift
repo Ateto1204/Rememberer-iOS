@@ -99,10 +99,14 @@ struct ChatView: View {
                 }
             }
         } else {
+<<<<<<< HEAD
             VStack {
                 ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
                 Spacer()
             }
+=======
+            ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
+>>>>>>> b73983130f57f41c5f1afb34778d0b32869b68b0
         }
     }
     
