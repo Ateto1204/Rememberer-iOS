@@ -1,8 +1,8 @@
 import SwiftUI
 import Combine
+import TipKit
 
 
-@available(iOS 17.0, *)
 struct ChatView: View {
     
     @ObservedObject var viewModel: ViewModel
@@ -129,8 +129,12 @@ struct ChatView: View {
         let ans: String = components[2]
         let explanation: String = components[3]
         
+        let tip = QuestionDetailTip()
         
         return VStack(alignment: .leading, spacing: 5) {
+            
+            TipView(tip, arrowEdge: .bottom)
+                .padding()
             
             Button {
                 showExplanation = true
@@ -262,5 +266,19 @@ struct ShakeEffect: GeometryEffect {
     
     func effectValue(size: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(translationX: 10 * sin(animatableData * .pi * CGFloat(3)), y: 0))
+    }
+}
+
+struct QuestionDetailTip: Tip {
+    var title: Text {
+        Text("Press the question")
+    }
+    
+    var message: Text? {
+        Text("Press the question the see more detail.")
+    }
+    
+    var image: Image? {
+        Image(systemName: "quote.bubble")
     }
 }

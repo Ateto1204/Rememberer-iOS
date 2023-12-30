@@ -10,7 +10,7 @@ import AppleProductTypes
 let package = Package(
     name: "Rememberer",
     platforms: [
-        .iOS("16.6")
+        .iOS("17.0")
     ],
     products: [
         .iOSApplication(

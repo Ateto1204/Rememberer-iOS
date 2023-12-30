@@ -1,6 +1,6 @@
 import SwiftUI
+import TipKit
 
-@available(iOS 17.0, *)
 struct ContentView: View {
     
     @State private var showScannerSheet = false
@@ -13,7 +13,6 @@ struct ContentView: View {
         NavigationStack {
             
             VStack {
-                
                 HStack {
                     Text("Select from")
                     

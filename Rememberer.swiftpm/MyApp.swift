@@ -1,11 +1,15 @@
 import SwiftUI
+import TipKit
 
-@available(iOS 17.0, *)
 @main
 struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
+    }
+    
+    init() {
+        try? Tips.configure()
     }
 }
