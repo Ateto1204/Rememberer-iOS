@@ -37,9 +37,7 @@ struct ContentView: View {
                         photoScanner()
                     })
                 }
-                .padding()
-                
-                Spacer()
+                .padding(.top, texts.count > 0 ? 25 : 100)
                 
                 if texts.count > 0 {
                     List {
@@ -52,12 +50,14 @@ struct ContentView: View {
                         }
                     }
                 } else {
-                    Text("No scan yet")
-                        .font(.title)
+                    ZStack {
+                        LottieView(loopMode: .loop, source: "Waiting")
+                            .opacity(0.68)
+                            .scaleEffect(0.5)
+                        Text("No source yet")
+                            .padding(.top, 270)
+                    }
                 }
-                
-                Spacer()
-                
             }
             .navigationTitle("Rememberer")
             

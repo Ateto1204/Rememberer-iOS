@@ -33,15 +33,20 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", "5.8.1"..<"6.0.0")
+        .package(url: "https://github.com/Alamofire/Alamofire.git", "5.8.1"..<"6.0.0"),
+        .package(url: "https://github.com/airbnb/lottie-ios.git", "4.3.4"..<"5.0.0")
     ],
     targets: [
         .executableTarget(
             name: "AppModule",
             dependencies: [
-                .product(name: "Alamofire", package: "Alamofire")
+                .product(name: "Alamofire", package: "Alamofire"),
+                .product(name: "Lottie", package: "lottie-ios")
             ],
             path: ".",
+            resources: [
+                .process("Resources")
+            ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")
             ]
