@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SourceContentView: View {
     
-    @ObservedObject var source: Source
+    @State var source: Source
     @State private var isAddingTag: Bool = false
     @State private var newTag: String = ""
     @State private var isAlert: Bool = false
@@ -19,7 +19,7 @@ struct SourceContentView: View {
                         HStack(spacing: 10) {
                             ForEach(source.tags, id: \.self) { tag in 
                                 Text(tag)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.white)
                                     .padding(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
                                     .background(Color.secondary)
                                     .cornerRadius(6)

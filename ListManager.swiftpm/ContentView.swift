@@ -16,7 +16,7 @@ struct ContentView: View {
                 }
                 OperatingButtonView()
             }
-            .navigationTitle("My sources")
+            .navigationBarTitle("My Resource")
         }
     }
     

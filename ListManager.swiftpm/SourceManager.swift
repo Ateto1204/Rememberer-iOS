@@ -11,17 +11,17 @@ extension ContentView {
     }
 }
 
-class Source: ObservableObject, Identifiable {
+struct Source: Identifiable {
     let id = UUID()
     var title: String
     var content: String = ""
-    @Published var tags: [String] = []
+    var tags: [String] = []
     
     init(title: String) {
         self.title = title
     }
     
-    func addTag(newTag: String) {
+    mutating func addTag(newTag: String) {
         tags.append(newTag)
     }
 }
