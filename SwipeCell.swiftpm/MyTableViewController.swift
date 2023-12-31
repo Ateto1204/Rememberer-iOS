@@ -1,4 +1,3 @@
-import SwiftUI
 import SwipeCellKit
 import UIKit
 
@@ -9,6 +8,10 @@ class myTableViewController: UITableViewController, SwipeTableViewCellDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(myCustomCell.self, forCellReuseIdentifier: cellIdentifier)
+    }
+    
+    func loadData() {
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -32,6 +35,14 @@ class myTableViewController: UITableViewController, SwipeTableViewCellDelegate {
         return [deleteAction]
     }
     
+    func tableView(_ tableView: UITableView, editActionsOptionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> SwipeOptions {
+        var options = SwipeOptions()
+        options.expansionStyle = .destructive
+        options.transitionStyle = .border
+        options.buttonSpacing = 10
+        
+        return options
+    }
 }
 
 class myCustomCell: SwipeTableViewCell {
