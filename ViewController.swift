@@ -33,7 +33,15 @@ class ViewController: UIViewController {
         
         // Adding tableView to AppView
         view.addSubview(tableView)
-        tableView.frame = view.bounds
+        
+        // Setting tableView with Auto Layout
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor), 
+            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor), 
+            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor), 
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor), 
+        ])
     }
     
     func loadData() {
