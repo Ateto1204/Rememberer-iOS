@@ -8,6 +8,7 @@ struct ContentView: View {
         VStack {
             ZStack {
                 viewController
+                    .padding()
                 OperatingButtonView()
             }
         }
