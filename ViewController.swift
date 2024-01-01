@@ -1,12 +1,19 @@
 import SwiftUI
 
 struct ViewControllerRepresentable: UIViewControllerRepresentable {
+    
+    private var controller = ViewController()
+    
     func makeUIViewController(context: Context) -> ViewController {
-        return ViewController()
+        return controller
     }
     
     func updateUIViewController(_ uiViewController: ViewController, context: Context) {
         
+    }
+    
+    func addData() {
+        controller.addResource()
     }
 }
 
@@ -29,9 +36,20 @@ class ViewController: UIViewController {
         tableView.frame = view.bounds
     }
     
+    func loadData() {
+        tableView.reloadData()
+    }
+    
+    func addResource() {
+        names.append(ViewController.demoResource)
+        tableView.reloadData()
+    }
 }
 
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    static let demoResource = "DEMO"
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         names.count
     }
