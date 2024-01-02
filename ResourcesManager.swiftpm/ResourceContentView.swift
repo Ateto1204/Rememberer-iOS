@@ -200,7 +200,6 @@ struct ResourceContentView: View {
                 }
             } else {
                 ZStack {
-//                    Spacer()
                     LottieView(loopMode: .loop, name: "UFOAnimation")
                         .opacity(0.8)
                         .scaleEffect(0.55)
@@ -209,7 +208,6 @@ struct ResourceContentView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .padding(.top, 70)
-//                    Spacer()
                 }
             }
         }

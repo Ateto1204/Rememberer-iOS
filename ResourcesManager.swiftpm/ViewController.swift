@@ -3,7 +3,7 @@ import UIKit
 
 struct ViewControllerRepresentable: UIViewControllerRepresentable {
     
-    @State var controller = ViewController()
+    private var controller = ViewController()
     
     func makeUIViewController(context: Context) -> ViewController {
         return controller
@@ -22,9 +22,9 @@ struct ViewControllerRepresentable: UIViewControllerRepresentable {
     }
 }
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, ObservableObject {
     
-    var resources: [Resource] = [Resource.demoResource]
+    @Published var resources: [Resource] = [Resource.demoResource]
     
     private let tableView = UITableView()
     

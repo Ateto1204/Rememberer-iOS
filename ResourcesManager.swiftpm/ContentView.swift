@@ -15,17 +15,11 @@ struct ContentView: View {
                     Spacer()
                 }
                 ZStack {
-                    if  viewController.controller.resources.count > 0 {
-                        viewController
-                            .padding()
-                            .onAppear(perform: {
-                                viewController.refresh()
-                            })
-                    } else {
-                        LottieView(loopMode: .loop, name: "Waiting")
-                            .opacity(0.68)
-                            .scaleEffect(0.5)
-                    }
+                    viewController
+                        .padding()
+                        .onAppear(perform: {
+                            viewController.refresh()
+                        })
                     OperatingButtonView()
                 }
             }
