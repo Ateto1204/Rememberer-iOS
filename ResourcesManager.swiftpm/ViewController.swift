@@ -90,9 +90,15 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
 }
 
 class Resource: ObservableObject, Identifiable {
+    
     let id = UUID()
+    
     var title: String
+    var modifyingTitle = false
+    
     var content: String = ""
+    var modifyingContent = false
+    
     @Published var tags: [String] = []
     
     init(title: String) {

@@ -10,6 +10,28 @@ struct ResourceContentView: View {
     var body: some View {
         VStack {
             
+            // Display resource title
+            HStack(alignment: .top) {
+                Text(resource.title)
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.leading, 20)
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 25, height: 25)
+                        .padding(.bottom)
+                        .padding(.leading)
+                }
+                
+                Spacer()
+            }
+            
+            // Display tagsView
             HStack {
                 Text("Tags: ")
                     .padding()
@@ -18,12 +40,28 @@ struct ResourceContentView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(resource.tags, id: \.self) { tag in 
-                                Text(tag)
-                                    .foregroundColor(.white)
-                                    .padding(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                                    .background(Color.secondary)
-                                    .cornerRadius(6)
-                                    .shadow(radius: 10)
+                                HStack {
+                                    
+                                    Button {
+                                        if let target = resource.tags.firstIndex(of: tag) {
+                                            resource.tags.remove(at: target)
+                                        }
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 11, height: 11)
+                                            .foregroundColor(.white)
+                                            .padding(.leading, 9)
+                                    }
+                                    
+                                    Text(tag)
+                                        .foregroundColor(.white)
+                                        .padding(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 8))
+                                }
+                                .background(Color.secondary)
+                                .cornerRadius(6)
+                                .shadow(radius: 10)
                             }
                         }
                     }
@@ -52,12 +90,14 @@ struct ResourceContentView: View {
             
             
             ZStack(alignment: .bottom) {
-                ScrollView(showsIndicators: false) {
-                    Text(resource.content)
-                        .padding()
-                }
-                .padding(.top, 12)
                 
+                // Display content of the resource
+                VStack {
+                    resourceContentView()
+                    Spacer()
+                }
+                
+                // Submit the content of the resourc to GPT
                 Button {
                     
                 } label: {
@@ -70,8 +110,9 @@ struct ResourceContentView: View {
                 .padding()
                 
             }
+            
+            Spacer()
         }
-        .navigationBarTitle(resource.title)
     }
     
     func tagAddingView() -> some View {
@@ -103,5 +144,57 @@ struct ResourceContentView: View {
             }
             .padding()
         }
+    }
+    
+    func resourceContentView() -> some View {
+        VStack {
+            HStack(spacing: 15) {
+                Spacer()
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "camera")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 22, height: 22)
+                }
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 20, height: 20)
+                }
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 25, height: 25)
+                }
+                
+            }
+            .padding(.trailing, 18)
+            
+            if !resource.content.isEmpty {
+                ScrollView {
+                    Text(resource.content)
+                        .padding()
+                }
+            } else {
+                VStack {
+                    Spacer()
+                    Text("Waiting to edit them...")
+                        .padding(.bottom, 100)
+                    Spacer()
+                }
+            }
+        }
+        .padding()
     }
 }
