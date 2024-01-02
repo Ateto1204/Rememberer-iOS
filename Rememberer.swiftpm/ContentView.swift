@@ -9,57 +9,48 @@ struct ContentView: View {
     @State var isPickerShowing = false
     @State var selectedImage: UIImage?
     
+    @State private var viewController = ViewControllerRepresentable()
+    
     var body: some View {
         NavigationStack {
-            
             VStack {
                 HStack {
-                    Text("Select from")
-                    
-                    Button {
-                        self.showScannerSheet = true
-                    } label: {
-                        Text("Camera")
-                    }
-                    .sheet(isPresented: $showScannerSheet, content: {
-                        makeScannerView()
-                    })
-                    
-                    Text("or")
-                    
-                    Button {
-                        self.isPickerShowing = true
-                    } label: {
-                        Text("Photo")
-                    }
-                    .sheet(isPresented: $isPickerShowing, content: {
-                        photoScanner()
-                    })
+                    Text("My Resources")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(EdgeInsets(top: 30, leading: 30, bottom: 20, trailing: 20))
+                    Spacer()
                 }
-                .padding(.top, texts.count > 0 ? 25 : 100)
-                
-                if texts.count > 0 {
-                    List {
-                        ForEach(texts) { text in 
-                            NavigationLink {
-                                ResultView(content: text.content)
-                            } label: {
-                                Text(text.content).lineLimit(3)
-                            }
-                        }
-                    }
-                } else {
-                    ZStack {
-                        LottieView(loopMode: .loop, source: "Waiting")
-                            .opacity(0.68)
-                            .scaleEffect(0.5)
-                        Text("No source yet")
-                            .padding(.top, 270)
-                    }
+                ZStack {
+                    viewController
+                        .padding()
+                        .onAppear(perform: {
+                            viewController.refresh()
+                        })
+                    OperatingButtonView()
                 }
             }
-            .navigationTitle("Rememberer")
-            
+        }
+    }
+    
+    func OperatingButtonView() -> some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 12) {
+                Spacer()                
+                Button {
+                    viewController.addData()
+                } label: {
+                    Text("+")
+                        .font(.largeTitle)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.accentColor)
+                        .clipShape(Circle())
+                        .padding(.trailing, 18)
+                }
+                .padding(.bottom, 18)
+            }
         }
     }
     

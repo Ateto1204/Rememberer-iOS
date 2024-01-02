@@ -17,6 +17,8 @@ struct ChatView: View {
     @State var currentAnswerIsCorrect: Bool = false
     @State var animateShake: Int = 0
     
+    let tip = QuestionDetailTip()
+    
     init(content: String) {
         let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
         self.viewModel = ViewModel(initString: prompt)
@@ -129,7 +131,7 @@ struct ChatView: View {
         let ans: String = components[2]
         let explanation: String = components[3]
         
-        let tip = QuestionDetailTip()
+        
         
         return VStack(alignment: .leading, spacing: 5) {
             
@@ -172,6 +174,8 @@ struct ChatView: View {
                         .foregroundColor(.secondary)
                         .padding()
                     Text(ans)
+                        .padding(.leading, 12)
+                        .padding(.trailing, 12)
                     Text(explanation)
                         .padding()
                     Button {
