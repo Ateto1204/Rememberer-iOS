@@ -8,18 +8,18 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "ListManager",
+    name: "ResourcesManager",
     platforms: [
         .iOS("17.0")
     ],
     products: [
         .iOSApplication(
-            name: "ListManager",
+            name: "ResourcesManager",
             targets: ["AppModule"],
             displayVersion: "1.0",
             bundleVersion: "1",
-            appIcon: .placeholder(icon: .map),
-            accentColor: .presetColor(.green),
+            appIcon: .placeholder(icon: .weights),
+            accentColor: .presetColor(.mint),
             supportedDeviceFamilies: [
                 .pad,
                 .phone
@@ -32,15 +32,9 @@ let package = Package(
             ]
         )
     ],
-    dependencies: [
-        .package(url: "https://github.com/SwipeCellKit/SwipeCellKit.git", "2.7.1"..<"3.0.0")
-    ],
     targets: [
         .executableTarget(
             name: "AppModule",
-            dependencies: [
-                .product(name: "SwipeCellKit", package: "SwipeCellKit")
-            ],
             path: ".",
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")

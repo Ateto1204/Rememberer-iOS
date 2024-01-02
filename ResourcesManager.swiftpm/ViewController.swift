@@ -49,7 +49,7 @@ class ViewController: UIViewController {
     }
     
     func addResource() {
-        resources.append(Resource.demoResource)
+        resources.append(Resource(title: "New resource"))
         tableView.reloadData()
     }
 }
@@ -89,17 +89,17 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-struct Resource: Identifiable {
+class Resource: ObservableObject, Identifiable {
     let id = UUID()
     var title: String
     var content: String = ""
-    var tags: [String] = []
+    @Published var tags: [String] = []
     
     init(title: String) {
         self.title = title
     }
     
-    mutating func addTag(newTag: String) {
+    func addTag(newTag: String) {
         tags.append(newTag)
     }
 }

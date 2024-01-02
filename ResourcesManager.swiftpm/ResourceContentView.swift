@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ResourceContentView: View {
     
-    @State var resource: Resource
+    @ObservedObject var resource: Resource
     @State private var isAddingTag: Bool = false
     @State private var newTag: String = ""
     @State private var isAlert: Bool = false
