@@ -3,7 +3,7 @@ import UIKit
 
 struct ViewControllerRepresentable: UIViewControllerRepresentable {
     
-    private var controller = ViewController()
+    @State var controller = ViewController()
     
     func makeUIViewController(context: Context) -> ViewController {
         return controller
@@ -98,6 +98,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         deleteAction.backgroundColor = .systemRed
         
         let config = UISwipeActionsConfiguration(actions: [deleteAction])
+        self.loadData()
         return config
     }
 }

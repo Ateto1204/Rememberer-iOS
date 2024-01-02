@@ -7,15 +7,27 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                HStack {
+                    Text("My Resources")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20))
+                    Spacer()
+                }
                 ZStack {
-                    viewController
-                        .padding()
-                        .onAppear(perform: {
-                            viewController.refresh()
-                        })
+                    if  viewController.controller.resources.count > 0 {
+                        viewController
+                            .padding()
+                            .onAppear(perform: {
+                                viewController.refresh()
+                            })
+                    } else {
+                        LottieView(loopMode: .loop, name: "Waiting")
+                            .opacity(0.68)
+                            .scaleEffect(0.5)
+                    }
                     OperatingButtonView()
                 }
-                .navigationBarTitle("My Resources")
             }
         }
     }

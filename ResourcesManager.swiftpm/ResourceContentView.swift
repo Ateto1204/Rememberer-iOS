@@ -8,116 +8,119 @@ struct ResourceContentView: View {
     @State private var newTitle: String = ""
     @State private var isAlert: Bool = false
     @State private var modifyingTitle: Bool = false
+    @State private var modifyingContent: Bool = false
     
     var body: some View {
-        VStack {
-            
-            // Display resource title
-            HStack(alignment: .top) {
+        ZStack(alignment: .top) {
+            VStack {
                 
-                Text(resource.title)
-                    .font(.largeTitle)
-                    .bold()
-                    .padding(.leading, 20)
-                
-                Button {
-                    self.modifyingTitle = true
-                } label: {
-                    Image(systemName: "square.and.pencil")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 25, height: 25)
-                        .padding(.bottom)
-                        .padding(.leading)
-                }
-                .sheet(isPresented: $modifyingTitle, content: {
-                    TitleModifyingView()
-                })
-                
-                Spacer()
-            }
-            
-            // Display tagsView
-            HStack {
-                Text("Tags: ")
-                    .padding()
-                
-                if resource.tags.count > 0 {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(resource.tags, id: \.self) { tag in 
-                                HStack {
-                                    
-                                    Button {
-                                        if let target = resource.tags.firstIndex(of: tag) {
-                                            resource.tags.remove(at: target)
-                                        }
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 11, height: 11)
-                                            .foregroundColor(.white)
-                                            .padding(.leading, 9)
-                                    }
-                                    
-                                    Text(tag)
-                                        .foregroundColor(.white)
-                                        .padding(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 8))
-                                }
-                                .background(Color.secondary)
-                                .cornerRadius(6)
-                                .shadow(radius: 10)
-                            }
-                        }
-                    }
-                } else {
-                    HStack {
-                        Spacer()
-                        Text("none")
-                            .foregroundColor(.gray)
-                            .padding()
-                        Spacer()
-                    }
-                }
-                
-                Button {
-                    self.isAddingTag = true
-                } label: {
-                    Image(systemName: "plus")
-                        .padding()
-                }
-                .sheet(isPresented: $isAddingTag, content: {
-                    tagAddingView()
-                })
-            }
-            .padding()
-            
-            
-            
-            ZStack(alignment: .bottom) {
-                
-                // Display content of the resource
-                VStack {
-                    resourceContentView()
-                    Spacer()
-                }
-                
-                // Submit the content of the resourc to GPT
-                Button {
+                // Display resource title
+                HStack(alignment: .top) {
                     
-                } label: {
-                    Text("Start")
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.accentColor.opacity(0.83))
-                        .cornerRadius(12)
+                    Text(resource.title)
+                        .font(.largeTitle)
+                        .bold()
+                    
+                    Button {
+                        self.modifyingTitle = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 25, height: 25)
+                            .foregroundColor(.secondary)
+                            .padding(.leading, 8)
+                    }
+                    .sheet(isPresented: $modifyingTitle, content: {
+                        TitleModifyingView()
+                    })
+                    
+                    Spacer()
                 }
                 .padding()
                 
+                // Display tagsView
+                HStack {
+                    Text("Tags: ")
+                        .padding()
+                    
+                    if resource.tags.count > 0 {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(resource.tags, id: \.self) { tag in 
+                                    HStack {
+                                        
+                                        Button {
+                                            if let target = resource.tags.firstIndex(of: tag) {
+                                                resource.tags.remove(at: target)
+                                            }
+                                        } label: {
+                                            Image(systemName: "xmark")
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 11, height: 11)
+                                                .foregroundColor(.white)
+                                                .padding(.leading, 9)
+                                        }
+                                        
+                                        Text(tag)
+                                            .foregroundColor(.white)
+                                            .padding(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 8))
+                                    }
+                                    .background(Color.secondary)
+                                    .cornerRadius(6)
+                                    .shadow(radius: 10)
+                                }
+                            }
+                        }
+                    } else {
+                        HStack {
+                            Spacer()
+                            Text("none")
+                                .foregroundColor(.gray)
+                                .padding()
+                            Spacer()
+                        }
+                    }
+                    
+                    Button {
+                        self.isAddingTag = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .padding()
+                    }
+                    .sheet(isPresented: $isAddingTag, content: {
+                        tagAddingView()
+                    })
+                }
+                .padding()
+                
+                Spacer()
+                
+                ZStack(alignment: .bottom) {
+                    
+                    // Display content of the resource
+                    VStack {
+                        resourceContentView()
+                        Spacer()
+                    }
+                    
+                    // Submit the content of the resourc to GPT
+                    Button {
+                        
+                    } label: {
+                        Text("Start")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.accentColor.opacity(0.83))
+                            .cornerRadius(12)
+                    }
+                    .padding()
+                    
+                }
+                
+                Spacer()
             }
-            
-            Spacer()
         }
     }
     
@@ -158,7 +161,7 @@ struct ResourceContentView: View {
                 Spacer()
                 
                 Button {
-                    
+                    modifyingContent = true
                 } label: {
                     Image(systemName: "camera")
                         .resizable()
@@ -167,7 +170,7 @@ struct ResourceContentView: View {
                 }
                 
                 Button {
-                    
+                    modifyingContent = true
                 } label: {
                     Image(systemName: "photo")
                         .resizable()
@@ -176,7 +179,7 @@ struct ResourceContentView: View {
                 }
                 
                 Button {
-                    
+                    modifyingContent = true
                 } label: {
                     Image(systemName: "square.and.pencil")
                         .resizable()
@@ -186,6 +189,9 @@ struct ResourceContentView: View {
                 
             }
             .padding(.trailing, 18)
+            .sheet(isPresented: $modifyingContent, content: {
+                Text("demo")
+            })
             
             if !resource.content.isEmpty {
                 ScrollView {
@@ -193,11 +199,17 @@ struct ResourceContentView: View {
                         .padding()
                 }
             } else {
-                VStack {
-                    Spacer()
-                    Text("Waiting to edit them...")
+                ZStack {
+//                    Spacer()
+                    LottieView(loopMode: .loop, name: "UFOAnimation")
+                        .opacity(0.8)
+                        .scaleEffect(0.55)
                         .padding(.bottom, 100)
-                    Spacer()
+                    Text("Waiting to edit them...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 70)
+//                    Spacer()
                 }
             }
         }
@@ -222,7 +234,6 @@ struct ResourceContentView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: 30, height: 30)
-                    .foregroundColor(.secondary)
                     .padding(.trailing, 12)
             }
             .alert("Your input is empty", isPresented: $isAlert) {
