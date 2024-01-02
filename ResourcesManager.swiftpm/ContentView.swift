@@ -10,6 +10,9 @@ struct ContentView: View {
                 ZStack {
                     viewController
                         .padding()
+                        .onAppear(perform: {
+                            viewController.refresh()
+                        })
                     OperatingButtonView()
                 }
                 .navigationBarTitle("My Resources")
@@ -20,8 +23,8 @@ struct ContentView: View {
     func OperatingButtonView() -> some View {
         VStack {
             Spacer()
-            HStack {
-                Spacer()
+            HStack(spacing: 12) {
+                Spacer()                
                 Button {
                     viewController.addData()
                 } label: {

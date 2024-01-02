@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ViewControllerRepresentable: UIViewControllerRepresentable {
     
@@ -14,6 +15,10 @@ struct ViewControllerRepresentable: UIViewControllerRepresentable {
     
     func addData() {
         controller.addResource()
+    }
+    
+    func refresh() {
+        controller.loadData()
     }
 }
 
@@ -62,7 +67,15 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
-        cell.textLabel?.text = resources[indexPath.row].title
+        
+        if !resources[indexPath.row].tags.isEmpty { 
+            cell.textLabel?.text = resources[indexPath.row].tags[0] + " | "
+        } else {
+            cell.textLabel?.text = ". default | "
+        }
+        
+        cell.textLabel?.text?.append(resources[indexPath.row].title)
+        
         return cell
     }
     
@@ -92,13 +105,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
 class Resource: ObservableObject, Identifiable {
     
     let id = UUID()
-    
-    var title: String
-    var modifyingTitle = false
-    
-    var content: String = ""
-    var modifyingContent = false
-    
+    @Published var title: String
+    @Published var content: String = ""
     @Published var tags: [String] = []
     
     init(title: String) {

@@ -5,20 +5,23 @@ struct ResourceContentView: View {
     @ObservedObject var resource: Resource
     @State private var isAddingTag: Bool = false
     @State private var newTag: String = ""
+    @State private var newTitle: String = ""
     @State private var isAlert: Bool = false
+    @State private var modifyingTitle: Bool = false
     
     var body: some View {
         VStack {
             
             // Display resource title
             HStack(alignment: .top) {
+                
                 Text(resource.title)
                     .font(.largeTitle)
                     .bold()
                     .padding(.leading, 20)
                 
                 Button {
-                    
+                    self.modifyingTitle = true
                 } label: {
                     Image(systemName: "square.and.pencil")
                         .resizable()
@@ -27,6 +30,9 @@ struct ResourceContentView: View {
                         .padding(.bottom)
                         .padding(.leading)
                 }
+                .sheet(isPresented: $modifyingTitle, content: {
+                    TitleModifyingView()
+                })
                 
                 Spacer()
             }
@@ -196,5 +202,34 @@ struct ResourceContentView: View {
             }
         }
         .padding()
+    }
+    
+    func TitleModifyingView() -> some View {
+        VStack(alignment: .center, spacing: 25) {
+            Text("Enter your new title")
+            TextField(resource.title, text: $newTitle)
+                .padding()
+            Button {
+                if !newTitle.isEmpty {
+                    resource.title = newTitle
+                    newTitle = ""
+                    modifyingTitle = false
+                } else {
+                    isAlert = true
+                }
+            } label: {
+                Image(systemName: "checkmark.square.fill")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 30, height: 30)
+                    .foregroundColor(.secondary)
+                    .padding(.trailing, 12)
+            }
+            .alert("Your input is empty", isPresented: $isAlert) {
+                Button("OK") {
+                    isAlert = false
+                }
+            }
+        }
     }
 }
