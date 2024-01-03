@@ -5,19 +5,19 @@ import TipKit
 
 struct ChatView: View {
     
-    @ObservedObject var viewModel: ViewModel
-    @ObservedObject var networkManager: NetworkManager
+    @ObservedObject private var viewModel: ViewModel
+    @ObservedObject private var networkManager: NetworkManager
     
-    @State var showExplanation: Bool = false
-    let asking: String = "Generate one more multiple choice questions"
-    let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words and must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
+    @State private var showExplanation: Bool = false
+    private let asking: String = "Generate one more multiple choice questions"
+    private let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words and must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
     
-    @State var showingHUD: Bool = false
-    @State var isAnimating: Bool = false
-    @State var currentAnswerIsCorrect: Bool = false
-    @State var animateShake: Int = 0
+    @State private var showingHUD: Bool = false
+    @State private var isAnimating: Bool = false
+    @State private var currentAnswerIsCorrect: Bool = false
+    @State private var animateShake: Int = 0
     
-    let tip = QuestionDetailTip()
+    private let tip = QuestionDetailTip()
     
     init(content: String) {
         let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
@@ -135,9 +135,6 @@ struct ChatView: View {
         
         return VStack(alignment: .leading, spacing: 5) {
             
-            TipView(tip, arrowEdge: .bottom)
-                .padding()
-            
             Button {
                 showExplanation = true
             } label: {
@@ -166,6 +163,7 @@ struct ChatView: View {
                 .background(Color(uiColor: .secondarySystemBackground))
                 .cornerRadius(10)
                 .padding()
+                .popoverTip(tip, arrowEdge: .top)
             }
             .sheet(isPresented: $showExplanation, content: {
                 VStack {

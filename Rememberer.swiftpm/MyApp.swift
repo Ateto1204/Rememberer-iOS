@@ -2,7 +2,7 @@ import SwiftUI
 import TipKit
 
 @main
-struct MyApp: App {
+struct Rememberer: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -10,6 +10,9 @@ struct MyApp: App {
     }
     
     init() {
-        try? Tips.configure()
+        try? Tips.configure([
+            .displayFrequency(.immediate), 
+            .datastoreLocation(.applicationDefault)
+        ])
     }
 }

@@ -10,6 +10,7 @@ struct ContentView: View {
     @State var selectedImage: UIImage?
     
     @State private var viewController = ViewControllerRepresentable()
+    private let addResourcesTip = AddResourcesTip()
     
     var body: some View {
         NavigationStack {
@@ -37,7 +38,7 @@ struct ContentView: View {
         VStack {
             Spacer()
             HStack(spacing: 12) {
-                Spacer()                
+                Spacer()
                 Button {
                     viewController.addData()
                 } label: {
@@ -48,6 +49,8 @@ struct ContentView: View {
                         .background(Color.accentColor)
                         .clipShape(Circle())
                         .padding(.trailing, 18)
+                        .popoverTip(addResourcesTip, arrowEdge: .trailing)
+                        .padding()
                 }
                 .padding(.bottom, 18)
             }
@@ -72,5 +75,19 @@ struct ContentView: View {
             }
             self.isPickerShowing = false
         })
+    }
+}
+
+struct AddResourcesTip: Tip {
+    var title: Text {
+        Text("Press this")
+    }
+    
+    var message: Text? {
+        Text("Press to add new resources")
+    }
+    
+    var image: Image? {
+        Image(systemName: "doc.badge.plus")
     }
 }
