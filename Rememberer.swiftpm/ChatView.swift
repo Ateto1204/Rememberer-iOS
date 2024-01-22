@@ -135,8 +135,11 @@ struct ChatView: View {
         
         return VStack(alignment: .leading, spacing: 5) {
             
+            TipView(tip, arrowEdge: .bottom)
+            
             Button {
                 showExplanation = true
+                tip.invalidate(reason: .actionPerformed)
             } label: {
                 HStack {
                     Spacer()
@@ -163,7 +166,6 @@ struct ChatView: View {
                 .background(Color(uiColor: .secondarySystemBackground))
                 .cornerRadius(10)
                 .padding()
-                .popoverTip(tip, arrowEdge: .top)
             }
             .sheet(isPresented: $showExplanation, content: {
                 VStack {
