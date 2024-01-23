@@ -111,6 +111,22 @@ struct ChatView: View {
             }
         }
     }
+
+    func decodeQues(content: String) -> Question {
+        let data = content.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        do {
+            let decodedData = try decoder.decode(Question.self, from: data)
+            return decodedData
+
+        } catch {
+            print(error)
+        }
+
+        let null: Question = Question(question: "", options: [], answer: "", reason: "")
+        return null
+    }
     
     func questionView(content: String, retry: Int) -> some View {
         
@@ -324,7 +340,7 @@ struct QuestionDetailTip: Tip {
     }
 }
 
-struct quesBank {
+struct quesBank: Codable {
     let questions: [Question]
 }
 
