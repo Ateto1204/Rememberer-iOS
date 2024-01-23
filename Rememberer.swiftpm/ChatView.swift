@@ -9,8 +9,21 @@ struct ChatView: View {
     @ObservedObject private var networkManager: NetworkManager
     
     @State private var showExplanation: Bool = false
-    private let asking: String = "Generate one more multiple choice questions"
-    private let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words and must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
+    private let jsonFormat: String = """
+{
+    "question": "", 
+    "options": [
+        "", 
+        "", 
+        "", 
+        ""
+    ], 
+    "answer": "", 
+    "reason": ""
+}
+"""
+    private let Msg: String = "Generate one more multiple-choice question, and do not answer anything else, just the generated question."
+    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate one multiple-choice question, and express them in the json format just now. The most important thing is, do not answer any other content except the generated question: "
     
     @State private var showingHUD: Bool = false
     @State private var isAnimating: Bool = false
@@ -20,7 +33,7 @@ struct ChatView: View {
     private let tip = QuestionDetailTip()
     
     init(content: String) {
-        let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
+        let prompt = "\(jsonFormat)\n\(firstMsg)\n\(content)"
         self.viewModel = ViewModel(initString: prompt)
         self.networkManager = NetworkManager()
     }
@@ -50,6 +63,7 @@ struct ChatView: View {
                 .padding(.top, 5)
                 .onAppear(perform: {
                     viewModel.sendMessage()
+                    viewModel.updateCurrentInput(input: Msg)
                 })
                 
                 if showingHUD {
@@ -100,148 +114,171 @@ struct ChatView: View {
     
     func questionView(content: String, retry: Int) -> some View {
         
-        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let data = content.data(using: .utf8)!
+        let decoder = JSONDecoder()
         
-        guard components.count >= 4 else {
-            print("Retry: \(components.count)")
-            if retry > 8 {
-                print("Resend")
-                return Text("")
-                .onAppear(perform: {
-                    viewModel.sendMessage()
-                })
-            }
-            else { return questionView(content: content, retry: retry + 1)}
-        }
-        
-        let question: String = components[0]        
-        var choices: [String] = components[1].components(separatedBy: .newlines)
-        
-        guard choices.count >= 4 else {
-            if retry > 8 {
-                print("Resend")
-                return Text("")
-                .onAppear(perform: {
-                    viewModel.sendMessage()
-                })
-            }
-            else { return questionView(content: content, retry: retry + 1) }
-        }
-        
-        let ans: String = components[2]
-        let explanation: String = components[3]
-        
-        
-        
-        return VStack(alignment: .leading, spacing: 5) {
+        do {
+            let decodedData = try decoder.decode(Question.self, from: data)
             
-            TipView(tip, arrowEdge: .bottom)
-            
-            Button {
-                showExplanation = true
-                tip.invalidate(reason: .actionPerformed)
-            } label: {
-                HStack {
-                    Spacer()
-                    VStack {
-                        Text("Question")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom, 8)
-                        
-                        Text(question)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(Color.primary)
-                            .font(.title3)
-                            .transition(.scale)
-                            .lineSpacing(1.5)
-                            .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
-                            .padding(.leading)
+            return ScrollView {
+                Group {
+                    Text(decodedData.question)
+                    ForEach(decodedData.options.indices) { idx in 
+                        Text(decodedData.options[idx])
+                            .padding()
                     }
-                    .padding(30)
-                    Spacer()
+                    Text(decodedData.answer)
+                    Text(decodedData.reason)
                 }
-                .frame(height: 250)
-                .background(Color(uiColor: .secondarySystemBackground))
-                .cornerRadius(10)
                 .padding()
             }
-            .sheet(isPresented: $showExplanation, content: {
-                VStack {
-                    Text("Expanation")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                        .padding()
-                    Text(ans)
-                        .padding(.leading, 12)
-                        .padding(.trailing, 12)
-                    Text(explanation)
-                        .padding()
-                    Button {
-                        viewModel.sendMessage()
-                    } label: {
-                        Text("Next")
-                    }
-                }
-            })
             
-            ForEach(choices.indices) { idx in 
-                if idx < choices.count && !choices[idx].isEmpty {
-                    Button {
-                        
-                        if choices[idx].first == ans.first {
-                            self.currentAnswerIsCorrect = true
-                        }
-                        
-                        withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
-                            showingHUD.toggle()
-                            isAnimating = true
-                        }
-                        
-                        if self.currentAnswerIsCorrect {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
-                                viewModel.sendMessage()
-                                withAnimation() {
-                                    showingHUD = false
-                                    isAnimating = false
-                                    self.currentAnswerIsCorrect = false
-                                }
-                            }
-                        } else {
-                            withAnimation(.default) {
-                                animateShake += 1
-                            }
-                            
-                            DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
-                                withAnimation() {
-                                    showingHUD = false
-                                    isAnimating = false
-                                    self.currentAnswerIsCorrect = false
-                                }
-                            }
-                        }
-                        
-                    } label: {
-                        HStack {
-                            Text(choices[idx])
-                                .font(.callout)
-                                .foregroundColor(.accentColor)
-                                .padding(EdgeInsets())
-                            Spacer()
-                        }
-                        .padding(12)
-                        .background(Color.accentColor.opacity(0.13))
-                        .cornerRadius(12)
-                        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-                    }
-                    .padding(3)
-                }
-            }
-            
-            Spacer()
+        } catch {
+            return ContentUnavailableView("Decode Fail", systemImage: "exclamationmark.triangle.fill")
         }
-        .disabled(isAnimating)
+        
+//        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+//        
+//        guard components.count >= 4 else {
+//            print("Retry: \(components.count)")
+//            if retry > 8 {
+//                print("Resend")
+//                return Text("")
+//                .onAppear(perform: {
+//                    viewModel.sendMessage()
+//                })
+//            }
+//            else { return questionView(content: content, retry: retry + 1)}
+//        }
+//        
+//        let question: String = components[0]        
+//        var choices: [String] = components[1].components(separatedBy: .newlines)
+//        
+//        guard choices.count >= 4 else {
+//            if retry > 8 {
+//                print("Resend")
+//                return Text("")
+//                .onAppear(perform: {
+//                    viewModel.sendMessage()
+//                })
+//            }
+//            else { return questionView(content: content, retry: retry + 1) }
+//        }
+//        
+//        let ans: String = components[2]
+//        let explanation: String = components[3]
+//        
+//        
+//        
+//        return VStack(alignment: .leading, spacing: 5) {
+//            
+//            TipView(tip, arrowEdge: .bottom)
+//            
+//            Button {
+//                showExplanation = true
+//                tip.invalidate(reason: .actionPerformed)
+//            } label: {
+//                HStack {
+//                    Spacer()
+//                    VStack {
+//                        Text("Question")
+//                            .font(.title3)
+//                            .foregroundColor(.secondary)
+//                            .padding(.bottom, 8)
+//                        
+//                        Text(question)
+//                            .fontWeight(.semibold)
+//                            .multilineTextAlignment(.center)
+//                            .foregroundColor(Color.primary)
+//                            .font(.title3)
+//                            .transition(.scale)
+//                            .lineSpacing(1.5)
+//                            .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
+//                            .padding(.leading)
+//                    }
+//                    .padding(30)
+//                    Spacer()
+//                }
+//                .frame(height: 250)
+//                .background(Color(uiColor: .secondarySystemBackground))
+//                .cornerRadius(10)
+//                .padding()
+//            }
+//            .sheet(isPresented: $showExplanation, content: {
+//                VStack {
+//                    Text("Expanation")
+//                        .font(.title3)
+//                        .foregroundColor(.secondary)
+//                        .padding()
+//                    Text(ans)
+//                        .padding(.leading, 12)
+//                        .padding(.trailing, 12)
+//                    Text(explanation)
+//                        .padding()
+//                    Button {
+//                        viewModel.sendMessage()
+//                    } label: {
+//                        Text("Next")
+//                    }
+//                }
+//            })
+//            
+//            ForEach(choices.indices) { idx in 
+//                if idx < choices.count && !choices[idx].isEmpty {
+//                    Button {
+//                        
+//                        if choices[idx].first == ans.first {
+//                            self.currentAnswerIsCorrect = true
+//                        }
+//                        
+//                        withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
+//                            showingHUD.toggle()
+//                            isAnimating = true
+//                        }
+//                        
+//                        if self.currentAnswerIsCorrect {
+//                            DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
+//                                viewModel.sendMessage()
+//                                withAnimation() {
+//                                    showingHUD = false
+//                                    isAnimating = false
+//                                    self.currentAnswerIsCorrect = false
+//                                }
+//                            }
+//                        } else {
+//                            withAnimation(.default) {
+//                                animateShake += 1
+//                            }
+//                            
+//                            DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
+//                                withAnimation() {
+//                                    showingHUD = false
+//                                    isAnimating = false
+//                                    self.currentAnswerIsCorrect = false
+//                                }
+//                            }
+//                        }
+//                        
+//                    } label: {
+//                        HStack {
+//                            Text(choices[idx])
+//                                .font(.callout)
+//                                .foregroundColor(.accentColor)
+//                                .padding(EdgeInsets())
+//                            Spacer()
+//                        }
+//                        .padding(12)
+//                        .background(Color.accentColor.opacity(0.13))
+//                        .cornerRadius(12)
+//                        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+//                    }
+//                    .padding(3)
+//                }
+//            }
+//            
+//            Spacer()
+//        }
+//        .disabled(isAnimating)
     }
     
 }
@@ -288,12 +325,12 @@ struct QuestionDetailTip: Tip {
 }
 
 struct quesBank {
-    let questions: [Questions]
+    let questions: [Question]
 }
 
-struct Questions: Codable {
+struct Question: Codable {
     let question: String
-    let option: [String]
+    let options: [String]
     let answer: String
-    let explanation: String
+    let reason: String
 }
