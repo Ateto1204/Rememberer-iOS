@@ -286,3 +286,14 @@ struct QuestionDetailTip: Tip {
         Image(systemName: "quote.bubble")
     }
 }
+
+struct quesBank {
+    let questions: [Questions]
+}
+
+struct Questions: Codable {
+    let question: String
+    let option: [String]
+    let answer: String
+    let explanation: String
+}
