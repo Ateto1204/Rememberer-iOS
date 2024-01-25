@@ -21,7 +21,7 @@ struct ChatView: View {
             ""
         ], 
         "answer": "", 
-        "reason": ""
+        "explanation": ""
     }
 ]
 """
@@ -32,6 +32,7 @@ struct ChatView: View {
     @State private var isAnimating: Bool = false
     @State private var currentAnswerIsCorrect: Bool = false
     @State private var animateShake: Int = 0
+    @State private var quesNo: Int = 0
     
     private let tip = QuestionDetailTip()
     
@@ -49,12 +50,10 @@ struct ChatView: View {
                     if viewModel.hasResponse {
                         if !viewModel.response.isEmpty {
                             let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
-                            if !decodedQuestions.isEmpty {
-                                VStack {
-                                    questionView(questions: decodedQuestions)
-                                    Spacer()
-                                    Spacer()
-                                }
+                            VStack {
+                                questionView(questions: decodedQuestions)
+                                Spacer()
+                                Spacer()
                             }
                         }
                     } else if viewModel.requestCrash {
@@ -71,6 +70,9 @@ struct ChatView: View {
                     viewModel.sendMessage()
 //                    viewModel.updateCurrentInput(input: Msg)
                 })
+                .refreshable {
+                    viewModel.sendMessage()
+                }
                 
                 if showingHUD {
                     HUD {
@@ -136,22 +138,42 @@ struct ChatView: View {
     
     func questionView(questions: [Question]) -> some View {
         
-        var quesNo: Int = 0
+        self.quesNo = 0
         
-        return ScrollView {
-            Group {
-                Text(questions[quesNo].question)
-                ForEach(questions[quesNo].options.indices) { idx in 
-                    Text(questions[quesNo].options[idx])
+        if questions.count > 0 {
+            return ScrollView {
+                Group {
+                    Text("Question")
+                        .bold()
+                    Text(questions[quesNo].question)
+                    
+                    Text("Options")
+                        .bold()
+                    ForEach(questions[quesNo].options.indices) { idx in 
+                        Text(questions[quesNo].options[idx])
+                    }
+                    
+                    Text("Answer")
+                        .bold()
+                    Text(questions[quesNo].answer)
+                    
+                    Text("Explanation")
+                        .bold()
+                    Text(questions[quesNo].explanation)
                 }
-                Text(questions[quesNo].answer)
-                Text(questions[quesNo].reason)
+                .padding()
+                
+                Button("Next") {
+                    if quesNo + 1 < questions.count {
+                        self.quesNo += 1
+                    } else {
+                        self.quesNo = 0
+                        viewModel.sendMessage()
+                    }
+                }
             }
-            .padding()
-            
-            Button("Next") {
-                quesNo += 1
-            }
+        } else {
+            return ContentUnavailableView("Process fail", systemImage: "exclamationmark.triangle.fill")
         }
         
 //        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -349,5 +371,5 @@ struct Question: Codable {
     let question: String
     let options: [String]
     let answer: String
-    let reason: String
+    let explanation: String
 }
