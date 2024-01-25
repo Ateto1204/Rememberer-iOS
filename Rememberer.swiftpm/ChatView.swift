@@ -9,21 +9,24 @@ struct ChatView: View {
     @ObservedObject private var networkManager: NetworkManager
     
     @State private var showExplanation: Bool = false
-    private let jsonFormat: String = """
-{
-    "question": "", 
-    "options": [
-        "", 
-        "", 
-        "", 
-        ""
-    ], 
-    "answer": "", 
-    "reason": ""
-}
+    private let jsonFormat: String = 
 """
-    private let Msg: String = "Generate one more multiple-choice question, and do not answer anything else, just the generated question."
-    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate one multiple-choice question, and express them in the json format just now. The most important thing is, do not answer any other content except the generated question: "
+[
+    {
+        "question": "", 
+        "options": [
+            "", 
+            "", 
+            "", 
+            ""
+        ], 
+        "answer": "", 
+        "reason": ""
+    }
+]
+"""
+    private let Msg: String = "Generate 5 more multiple-choice questions, and do not answer anything else, just the generated questions."
+    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate 3 multiple-choice questions, and express them in the json format just now. The most important thing is, do not answer any other content except the generated questions: "
     
     @State private var showingHUD: Bool = false
     @State private var isAnimating: Bool = false
@@ -33,7 +36,7 @@ struct ChatView: View {
     private let tip = QuestionDetailTip()
     
     init(content: String) {
-        let prompt = "\(jsonFormat)\n\(firstMsg)\n\(content)"
+        let prompt = "\(jsonFormat)\n\n\(firstMsg)\n\n\(content)"
         self.viewModel = ViewModel(initString: prompt)
         self.networkManager = NetworkManager()
     }
@@ -45,10 +48,13 @@ struct ChatView: View {
                         
                     if viewModel.hasResponse {
                         if !viewModel.response.isEmpty {
-                            VStack {
-                                questionView(content: viewModel.response, retry: 0)
-                                Spacer()
-                                Spacer()
+                            let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
+                            if !decodedQuestions.isEmpty {
+                                VStack {
+                                    questionView(questions: decodedQuestions)
+                                    Spacer()
+                                    Spacer()
+                                }
                             }
                         }
                     } else if viewModel.requestCrash {
@@ -63,7 +69,7 @@ struct ChatView: View {
                 .padding(.top, 5)
                 .onAppear(perform: {
                     viewModel.sendMessage()
-                    viewModel.updateCurrentInput(input: Msg)
+//                    viewModel.updateCurrentInput(input: Msg)
                 })
                 
                 if showingHUD {
@@ -111,46 +117,41 @@ struct ChatView: View {
             }
         }
     }
-
-    func decodeQues(content: String) -> Question {
+    
+    func decodeQues(content: String) -> [Question] {
         let data = content.data(using: .utf8)!
         let decoder = JSONDecoder()
-
+        
         do {
-            let decodedData = try decoder.decode(Question.self, from: data)
+            let decodedData = try decoder.decode([Question].self, from: data)
             return decodedData
-
-        } catch {
-            print(error)
-        }
-
-        let null: Question = Question(question: "", options: [], answer: "", reason: "")
+         } catch {
+             print(error)
+         }
+        
+        let null: [Question] = []
         return null
+        
     }
     
-    func questionView(content: String, retry: Int) -> some View {
+    func questionView(questions: [Question]) -> some View {
         
-        let data = content.data(using: .utf8)!
-        let decoder = JSONDecoder()
+        var quesNo: Int = 0
         
-        do {
-            let decodedData = try decoder.decode(Question.self, from: data)
-            
-            return ScrollView {
-                Group {
-                    Text(decodedData.question)
-                    ForEach(decodedData.options.indices) { idx in 
-                        Text(decodedData.options[idx])
-                            .padding()
-                    }
-                    Text(decodedData.answer)
-                    Text(decodedData.reason)
+        return ScrollView {
+            Group {
+                Text(questions[quesNo].question)
+                ForEach(questions[quesNo].options.indices) { idx in 
+                    Text(questions[quesNo].options[idx])
                 }
-                .padding()
+                Text(questions[quesNo].answer)
+                Text(questions[quesNo].reason)
             }
+            .padding()
             
-        } catch {
-            return ContentUnavailableView("Decode Fail", systemImage: "exclamationmark.triangle.fill")
+            Button("Next") {
+                quesNo += 1
+            }
         }
         
 //        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -340,7 +341,7 @@ struct QuestionDetailTip: Tip {
     }
 }
 
-struct quesBank: Codable {
+struct quesBank : Codable{
     let questions: [Question]
 }
 
