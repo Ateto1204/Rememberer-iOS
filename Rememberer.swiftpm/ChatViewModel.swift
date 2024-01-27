@@ -7,7 +7,7 @@ extension ChatView {
         
         @Published var messages: [Message] = []
         @Published var currentInput: String = ""
-        @Published var response: String = ""
+        @Published var response: [Question] = []
         @Published var hasResponse: Bool = false
         @Published var requestCrash: Bool = false
         private let openAIService = OpenAIService()
@@ -24,19 +24,15 @@ extension ChatView {
             
             self.hasResponse = false
             
-            let newMessage = Message(id: UUID(), role: .user, content: currentInput, createAt: Date())
-            messages.append(newMessage)
-            currentInput = ""
-            
             openAIService.sendMessage(messages: messages) { [weak self] response in 
-                guard let self = self, let receiveOpenAIMessage = response?.choices.first?.message else {
+                guard let self = self, let receiveOpenAIMessage = response else {
                     print("Had no received message")
                     self?.requestCrash = true
 //                    self?.sendMessage()
                     return 
                 }
                 
-                let receiveMessage = Message(id: UUID(), role: receiveOpenAIMessage.role, content: receiveOpenAIMessage.content, createAt: Date())
+                let receiveMessage = Message(id: UUID(), content: receiveOpenAIMessage, createAt: Date())
                 
                 self.response = receiveMessage.content
                 print("receive: \(self.response)")
@@ -65,7 +61,6 @@ extension ChatView {
 
 struct Message: Decodable {
     let id: UUID
-    let role: SenderRole
-    let content: String
+    let content: [Question]
     let createAt: Date
 }

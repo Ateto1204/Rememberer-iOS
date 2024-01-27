@@ -49,7 +49,7 @@ struct ChatView: View {
                         
                     if viewModel.hasResponse {
                         if !viewModel.response.isEmpty {
-                            let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
+                            let decodedQuestions: [Question] = viewModel.response
                             VStack {
                                 questionView(questions: decodedQuestions)
                                 Spacer()
@@ -361,15 +361,4 @@ struct QuestionDetailTip: Tip {
     var image: Image? {
         Image(systemName: "quote.bubble")
     }
-}
-
-struct quesBank : Codable{
-    let questions: [Question]
-}
-
-struct Question: Codable {
-    let question: String
-    let options: [String]
-    let answer: String
-    let explanation: String
 }
