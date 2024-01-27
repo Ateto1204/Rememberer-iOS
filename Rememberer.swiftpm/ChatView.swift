@@ -9,18 +9,35 @@ struct ChatView: View {
     @ObservedObject private var networkManager: NetworkManager
     
     @State private var showExplanation: Bool = false
-    private let asking: String = "Generate one more multiple choice questions"
-    private let format: String = "In addition, the format of the question must completely follow this that do not has additional lines or words and must include the keyword \"Component:\":\nComponent: (the question)\nComponent: (the choices)\nComponent: (the answer)\nComponent: (the explanation)"
+    private let jsonFormat: String = 
+"""
+[
+    {
+        "question": "", 
+        "options": [
+            "", 
+            "", 
+            "", 
+            ""
+        ], 
+        "answer": "", 
+        "explanation": ""
+    }
+]
+"""
+    private let Msg: String = "Generate 5 more multiple-choice questions, and do not answer anything else, just the generated questions."
+    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate 3 multiple-choice questions, and express them in the json format just now. The most important thing is, do not answer any other content except the generated questions: "
     
     @State private var showingHUD: Bool = false
     @State private var isAnimating: Bool = false
     @State private var currentAnswerIsCorrect: Bool = false
     @State private var animateShake: Int = 0
+    @State private var quesNo: Int = 0
     
     private let tip = QuestionDetailTip()
     
     init(content: String) {
-        let prompt = "\(asking) based on the following: \n \(content)\n\(format)"
+        let prompt = "\(jsonFormat)\n\n\(firstMsg)\n\n\(content)"
         self.viewModel = ViewModel(initString: prompt)
         self.networkManager = NetworkManager()
     }
@@ -32,8 +49,9 @@ struct ChatView: View {
                         
                     if viewModel.hasResponse {
                         if !viewModel.response.isEmpty {
+                            let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
                             VStack {
-                                questionView(content: viewModel.response, retry: 0)
+                                questionView(questions: decodedQuestions)
                                 Spacer()
                                 Spacer()
                             }
@@ -50,7 +68,11 @@ struct ChatView: View {
                 .padding(.top, 5)
                 .onAppear(perform: {
                     viewModel.sendMessage()
+//                    viewModel.updateCurrentInput(input: Msg)
                 })
+                .refreshable {
+                    viewModel.sendMessage()
+                }
                 
                 if showingHUD {
                     HUD {
@@ -98,150 +120,160 @@ struct ChatView: View {
         }
     }
     
-    func questionView(content: String, retry: Int) -> some View {
+    func decodeQues(content: String) -> [Question] {
+        let data = content.data(using: .utf8)!
+        let decoder = JSONDecoder()
         
-        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        do {
+            let decodedData = try decoder.decode([Question].self, from: data)
+            return decodedData
+         } catch {
+             print(error)
+         }
         
-        guard components.count >= 4 else {
-            print("Retry: \(components.count)")
-            if retry > 8 {
-                print("Resend")
-                return Text("")
-                .onAppear(perform: {
-                    viewModel.sendMessage()
-                })
-            }
-            else { return questionView(content: content, retry: retry + 1)}
-        }
+        let null: [Question] = []
+        return null
         
-        let question: String = components[0]        
-        var choices: [String] = components[1].components(separatedBy: .newlines)
+    }
+    
+    func questionView(questions: [Question]) -> some View {
         
-        guard choices.count >= 4 else {
-            if retry > 8 {
-                print("Resend")
-                return Text("")
-                .onAppear(perform: {
-                    viewModel.sendMessage()
-                })
-            }
-            else { return questionView(content: content, retry: retry + 1) }
-        }
+        self.quesNo = 0
         
-        let ans: String = components[2]
-        let explanation: String = components[3]
-        
-        
-        
-        return VStack(alignment: .leading, spacing: 5) {
-            
-            TipView(tip, arrowEdge: .bottom)
-            
-            Button {
-                showExplanation = true
-                tip.invalidate(reason: .actionPerformed)
-            } label: {
-                HStack {
-                    Spacer()
+        if questions.count > 0 {
+            return VStack {
+                    
+                    
+                Button {
+                    showExplanation = true
+                    tip.invalidate(reason: .actionPerformed)
+                } label: {
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Text("Question")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 8)
+                            
+                            Text(questions[quesNo].question)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color.primary)
+                                .font(.title3)
+                                .transition(.scale)
+                                .lineSpacing(1.5)
+                                .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
+                                .padding(.leading)
+                        }
+                        .padding(30)
+                        Spacer()
+                    }
+                    .frame(height: 250)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding()
+                }
+                .sheet(isPresented: $showExplanation, content: {
                     VStack {
-                        Text("Question")
+                        Text("Expanation")
                             .font(.title3)
                             .foregroundColor(.secondary)
-                            .padding(.bottom, 8)
-                        
-                        Text(question)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(Color.primary)
-                            .font(.title3)
-                            .transition(.scale)
-                            .lineSpacing(1.5)
-                            .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
-                            .padding(.leading)
-                    }
-                    .padding(30)
-                    Spacer()
-                }
-                .frame(height: 250)
-                .background(Color(uiColor: .secondarySystemBackground))
-                .cornerRadius(10)
-                .padding()
-            }
-            .sheet(isPresented: $showExplanation, content: {
-                VStack {
-                    Text("Expanation")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                        .padding()
-                    Text(ans)
-                        .padding(.leading, 12)
-                        .padding(.trailing, 12)
-                    Text(explanation)
-                        .padding()
-                    Button {
-                        viewModel.sendMessage()
-                    } label: {
-                        Text("Next")
-                    }
-                }
-            })
-            
-            ForEach(choices.indices) { idx in 
-                if idx < choices.count && !choices[idx].isEmpty {
-                    Button {
-                        
-                        if choices[idx].first == ans.first {
-                            self.currentAnswerIsCorrect = true
-                        }
-                        
-                        withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
-                            showingHUD.toggle()
-                            isAnimating = true
-                        }
-                        
-                        if self.currentAnswerIsCorrect {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
+                            .padding()
+                        Text(questions[quesNo].answer)
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                        Text(questions[quesNo].explanation)
+                            .padding()
+                        Button {
+                            showExplanation = false
+                            if quesNo + 1 < questions.count {
+                                self.quesNo += 1
+                            } else {
+                                self.quesNo = 0
                                 viewModel.sendMessage()
-                                withAnimation() {
-                                    showingHUD = false
-                                    isAnimating = false
-                                    self.currentAnswerIsCorrect = false
-                                }
                             }
-                        } else {
-                            withAnimation(.default) {
-                                animateShake += 1
+                        } label: {
+                            Text("Next")
+                        }
+                    }
+                })
+                
+                ForEach(questions[quesNo].options.indices) { idx in 
+                    
+                    if idx < questions[quesNo].options.count {
+                        Button {
+                        
+                            if questions[quesNo].options[idx] == questions[quesNo].answer {
+                                self.currentAnswerIsCorrect = true
                             }
                             
-                            DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
-                                withAnimation() {
-                                    showingHUD = false
-                                    isAnimating = false
-                                    self.currentAnswerIsCorrect = false
+                            withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
+                                showingHUD.toggle()
+                                isAnimating = true
+                            }
+                            
+                            if self.currentAnswerIsCorrect {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
+                                    withAnimation() {
+                                        showingHUD = false
+                                        isAnimating = false
+                                        self.currentAnswerIsCorrect = false
+                                    }
+                                    if quesNo + 1 < questions.count {
+                                        self.quesNo += 1
+                                    } else {
+                                        self.quesNo = 0
+                                        viewModel.sendMessage()
+                                    }
+                                }
+                            } else {
+                                withAnimation(.default) {
+                                    animateShake += 1
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
+                                    withAnimation() {
+                                        showingHUD = false
+                                        isAnimating = false
+                                        self.currentAnswerIsCorrect = false
+                                    }
                                 }
                             }
+                            
+                        } label: {
+                            HStack {
+                                Text(questions[quesNo].options[idx])
+                                    .font(.callout)
+                                    .foregroundColor(.accentColor)
+                                    .padding(EdgeInsets())
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color.accentColor.opacity(0.13))
+                            .cornerRadius(12)
+                            .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
                         }
-                        
-                    } label: {
-                        HStack {
-                            Text(choices[idx])
-                                .font(.callout)
-                                .foregroundColor(.accentColor)
-                                .padding(EdgeInsets())
-                            Spacer()
-                        }
-                        .padding(12)
-                        .background(Color.accentColor.opacity(0.13))
-                        .cornerRadius(12)
-                        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+                        .padding(3)
                     }
-                    .padding(3)
                 }
             }
+            .padding()
             
-            Spacer()
-        }
-        .disabled(isAnimating)
+            Button("Next") {
+                if quesNo + 1 < questions.count {
+                    self.quesNo += 1
+                } else {
+                    self.quesNo = 0
+                    viewModel.sendMessage()
+                }
+            }
+        } else {
+            viewModel.sendMessage()
+            return ContentUnavailableView("Process fail", systemImage: "exclamationmark.triangle.fill")
+        }          
+//            TipView(tip, arrowEdge: .bottom)  
+//        .disabled(isAnimating)
     }
     
 }
