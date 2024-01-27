@@ -6,34 +6,34 @@ extension ChatView {
     class ViewModel: ObservableObject {
         
         @Published var messages: [Message] = []
-        @Published var currentInput: String = ""
-        @Published var response: [Question] = []
+        @Published var message: String = ""
+        @Published var response: String = ""
         @Published var hasResponse: Bool = false
         @Published var requestCrash: Bool = false
         private let openAIService = OpenAIService()
         
         init(initString: String) {
-            self.currentInput = initString
+            self.message = initString
         }
         
-        func updateCurrentInput(input: String) {
-            self.currentInput = input
+        func updateMessage(input: String) {
+            self.message = input
         }
         
         func sendMessage() {
             
             self.hasResponse = false
+            let newMessage = Message(id: UUID(), role: .user, content: message)
+            messages.append(newMessage)
             
             openAIService.sendMessage(messages: messages) { [weak self] response in 
-                guard let self = self, let receiveOpenAIMessage = response else {
+                guard let self = self, let receiveOpenAIMessage = response?.choices.first?.message else {
                     print("Had no received message")
                     self?.requestCrash = true
-//                    self?.sendMessage()
                     return 
                 }
                 
-                let receiveMessage = Message(id: UUID(), content: receiveOpenAIMessage, createAt: Date())
-                
+                let receiveMessage = Message(id: UUID(), role: receiveOpenAIMessage.role, content: receiveOpenAIMessage.content)
                 self.response = receiveMessage.content
                 print("receive: \(self.response)")
                 self.hasResponse = true
@@ -61,6 +61,6 @@ extension ChatView {
 
 struct Message: Decodable {
     let id: UUID
-    let content: [Question]
-    let createAt: Date
+    let role: SenderRole
+    let content: String
 }

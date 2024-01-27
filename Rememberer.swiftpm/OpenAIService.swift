@@ -6,8 +6,8 @@ class OpenAIService {
     
     let endpointURL = "https://api.openai.com/v1/chat/completions"
     
-    func sendMessage(messages: [Message], completion: @escaping ([Question]?) -> Void) {
-        let openAIMessages = messages.map({ OpenAIChatMessage(content: $0.content) })
+    func sendMessage(messages: [Message], completion: @escaping (OpenAIChatResponse?) -> Void) {
+        let openAIMessages = messages.map({ OpenAIChatMessage(role: $0.role, content: $0.content)})
         let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k-0613", messages: openAIMessages)
         
         guard let url = URL(string: endpointURL) else {
@@ -24,20 +24,23 @@ class OpenAIService {
             let requestBody = try JSONEncoder().encode(body)
             request.httpBody = requestBody
         } catch {
+            print("request error")
             completion(nil)
             return
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
+                print("response error")
                 completion(nil)
                 return
             }
             
             do {
-                let openAIResponse = try JSONDecoder().decode([Question].self, from: data)
+                let openAIResponse = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
                 completion(openAIResponse)
             } catch {
+                print("decode error")
                 completion(nil)
             }
         }.resume()
@@ -49,8 +52,10 @@ struct OpenAIChatBody: Encodable {
     let messages: [OpenAIChatMessage]
 }
 
-struct OpenAIChatMessage: Codable {
-    let content: [Question]
+enum SenderRole: String, Codable {
+    case system
+    case user
+    case assistant
 }
 
 struct OpenAIChatResponse: Decodable {
@@ -59,6 +64,11 @@ struct OpenAIChatResponse: Decodable {
 
 struct OpenAIChatChoice: Decodable {
     let message: OpenAIChatMessage
+}
+
+struct OpenAIChatMessage: Codable {
+    let role: SenderRole
+    let content: String
 }
 
 struct Question: Codable {
