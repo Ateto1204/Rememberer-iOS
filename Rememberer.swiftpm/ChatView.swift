@@ -141,182 +141,138 @@ struct ChatView: View {
         self.quesNo = 0
         
         if questions.count > 0 {
-            return ScrollView {
-                Group {
-                    Text("Question")
-                        .bold()
-                    Text(questions[quesNo].question)
+            return VStack {
                     
-                    Text("Options")
-                        .bold()
-                    ForEach(questions[quesNo].options.indices) { idx in 
-                        Text(questions[quesNo].options[idx])
+                    
+                Button {
+                    showExplanation = true
+                    tip.invalidate(reason: .actionPerformed)
+                } label: {
+                    HStack {
+                        Spacer()
+                        VStack {
+                            Text("Question")
+                                .font(.title3)
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 8)
+                            
+                            Text(questions[quesNo].question)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(Color.primary)
+                                .font(.title3)
+                                .transition(.scale)
+                                .lineSpacing(1.5)
+                                .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
+                                .padding(.leading)
+                        }
+                        .padding(30)
+                        Spacer()
                     }
-                    
-                    Text("Answer")
-                        .bold()
-                    Text(questions[quesNo].answer)
-                    
-                    Text("Explanation")
-                        .bold()
-                    Text(questions[quesNo].explanation)
+                    .frame(height: 250)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .cornerRadius(10)
+                    .padding()
                 }
-                .padding()
+                .sheet(isPresented: $showExplanation, content: {
+                    VStack {
+                        Text("Expanation")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                            .padding()
+                        Text(questions[quesNo].answer)
+                            .padding(.leading, 12)
+                            .padding(.trailing, 12)
+                        Text(questions[quesNo].explanation)
+                            .padding()
+                        Button {
+                            showExplanation = false
+                            if quesNo + 1 < questions.count {
+                                self.quesNo += 1
+                            } else {
+                                self.quesNo = 0
+                                viewModel.sendMessage()
+                            }
+                        } label: {
+                            Text("Next")
+                        }
+                    }
+                })
                 
-                Button("Next") {
-                    if quesNo + 1 < questions.count {
-                        self.quesNo += 1
-                    } else {
-                        self.quesNo = 0
-                        viewModel.sendMessage()
+                ForEach(questions[quesNo].options.indices) { idx in 
+                    
+                    if idx < questions[quesNo].options.count {
+                        Button {
+                        
+                            if questions[quesNo].options[idx] == questions[quesNo].answer {
+                                self.currentAnswerIsCorrect = true
+                            }
+                            
+                            withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
+                                showingHUD.toggle()
+                                isAnimating = true
+                            }
+                            
+                            if self.currentAnswerIsCorrect {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
+                                    withAnimation() {
+                                        showingHUD = false
+                                        isAnimating = false
+                                        self.currentAnswerIsCorrect = false
+                                    }
+                                    if quesNo + 1 < questions.count {
+                                        self.quesNo += 1
+                                    } else {
+                                        self.quesNo = 0
+                                        viewModel.sendMessage()
+                                    }
+                                }
+                            } else {
+                                withAnimation(.default) {
+                                    animateShake += 1
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
+                                    withAnimation() {
+                                        showingHUD = false
+                                        isAnimating = false
+                                        self.currentAnswerIsCorrect = false
+                                    }
+                                }
+                            }
+                            
+                        } label: {
+                            HStack {
+                                Text(questions[quesNo].options[idx])
+                                    .font(.callout)
+                                    .foregroundColor(.accentColor)
+                                    .padding(EdgeInsets())
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color.accentColor.opacity(0.13))
+                            .cornerRadius(12)
+                            .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+                        }
+                        .padding(3)
                     }
                 }
             }
+            .padding()
+            
+            Button("Next") {
+                if quesNo + 1 < questions.count {
+                    self.quesNo += 1
+                } else {
+                    self.quesNo = 0
+                    viewModel.sendMessage()
+                }
+            }
         } else {
+            viewModel.sendMessage()
             return ContentUnavailableView("Process fail", systemImage: "exclamationmark.triangle.fill")
-        }
-        
-//        let components: [String] = content.components(separatedBy: "Component: ").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-//        
-//        guard components.count >= 4 else {
-//            print("Retry: \(components.count)")
-//            if retry > 8 {
-//                print("Resend")
-//                return Text("")
-//                .onAppear(perform: {
-//                    viewModel.sendMessage()
-//                })
-//            }
-//            else { return questionView(content: content, retry: retry + 1)}
-//        }
-//        
-//        let question: String = components[0]        
-//        var choices: [String] = components[1].components(separatedBy: .newlines)
-//        
-//        guard choices.count >= 4 else {
-//            if retry > 8 {
-//                print("Resend")
-//                return Text("")
-//                .onAppear(perform: {
-//                    viewModel.sendMessage()
-//                })
-//            }
-//            else { return questionView(content: content, retry: retry + 1) }
-//        }
-//        
-//        let ans: String = components[2]
-//        let explanation: String = components[3]
-//        
-//        
-//        
-//        return VStack(alignment: .leading, spacing: 5) {
-//            
-//            TipView(tip, arrowEdge: .bottom)
-//            
-//            Button {
-//                showExplanation = true
-//                tip.invalidate(reason: .actionPerformed)
-//            } label: {
-//                HStack {
-//                    Spacer()
-//                    VStack {
-//                        Text("Question")
-//                            .font(.title3)
-//                            .foregroundColor(.secondary)
-//                            .padding(.bottom, 8)
-//                        
-//                        Text(question)
-//                            .fontWeight(.semibold)
-//                            .multilineTextAlignment(.center)
-//                            .foregroundColor(Color.primary)
-//                            .font(.title3)
-//                            .transition(.scale)
-//                            .lineSpacing(1.5)
-//                            .modifier(ShakeEffect(animatableData: CGFloat(animateShake)))
-//                            .padding(.leading)
-//                    }
-//                    .padding(30)
-//                    Spacer()
-//                }
-//                .frame(height: 250)
-//                .background(Color(uiColor: .secondarySystemBackground))
-//                .cornerRadius(10)
-//                .padding()
-//            }
-//            .sheet(isPresented: $showExplanation, content: {
-//                VStack {
-//                    Text("Expanation")
-//                        .font(.title3)
-//                        .foregroundColor(.secondary)
-//                        .padding()
-//                    Text(ans)
-//                        .padding(.leading, 12)
-//                        .padding(.trailing, 12)
-//                    Text(explanation)
-//                        .padding()
-//                    Button {
-//                        viewModel.sendMessage()
-//                    } label: {
-//                        Text("Next")
-//                    }
-//                }
-//            })
-//            
-//            ForEach(choices.indices) { idx in 
-//                if idx < choices.count && !choices[idx].isEmpty {
-//                    Button {
-//                        
-//                        if choices[idx].first == ans.first {
-//                            self.currentAnswerIsCorrect = true
-//                        }
-//                        
-//                        withAnimation(Animation.timingCurve(0.47, 1.62, 0.45, 0.99, duration: 0.4)) {
-//                            showingHUD.toggle()
-//                            isAnimating = true
-//                        }
-//                        
-//                        if self.currentAnswerIsCorrect {
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + (1.7)) {
-//                                viewModel.sendMessage()
-//                                withAnimation() {
-//                                    showingHUD = false
-//                                    isAnimating = false
-//                                    self.currentAnswerIsCorrect = false
-//                                }
-//                            }
-//                        } else {
-//                            withAnimation(.default) {
-//                                animateShake += 1
-//                            }
-//                            
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + (2.5)) {
-//                                withAnimation() {
-//                                    showingHUD = false
-//                                    isAnimating = false
-//                                    self.currentAnswerIsCorrect = false
-//                                }
-//                            }
-//                        }
-//                        
-//                    } label: {
-//                        HStack {
-//                            Text(choices[idx])
-//                                .font(.callout)
-//                                .foregroundColor(.accentColor)
-//                                .padding(EdgeInsets())
-//                            Spacer()
-//                        }
-//                        .padding(12)
-//                        .background(Color.accentColor.opacity(0.13))
-//                        .cornerRadius(12)
-//                        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-//                    }
-//                    .padding(3)
-//                }
-//            }
-//            
-//            Spacer()
-//        }
+        }          
+//            TipView(tip, arrowEdge: .bottom)  
 //        .disabled(isAnimating)
     }
     
@@ -361,15 +317,4 @@ struct QuestionDetailTip: Tip {
     var image: Image? {
         Image(systemName: "quote.bubble")
     }
-}
-
-struct quesBank : Codable{
-    let questions: [Question]
-}
-
-struct Question: Codable {
-    let question: String
-    let options: [String]
-    let answer: String
-    let explanation: String
 }

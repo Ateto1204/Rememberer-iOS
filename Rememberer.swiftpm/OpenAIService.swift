@@ -7,7 +7,7 @@ class OpenAIService {
     let endpointURL = "https://api.openai.com/v1/chat/completions"
     
     func sendMessage(messages: [Message], completion: @escaping (OpenAIChatResponse?) -> Void) {
-        let openAIMessages = messages.map({ OpenAIChatMessage(role: $0.role, content: $0.content) })
+        let openAIMessages = messages.map({ OpenAIChatMessage(role: $0.role, content: $0.content)})
         let body = OpenAIChatBody(model: "gpt-3.5-turbo-16k-0613", messages: openAIMessages)
         
         guard let url = URL(string: endpointURL) else {
@@ -24,12 +24,14 @@ class OpenAIService {
             let requestBody = try JSONEncoder().encode(body)
             request.httpBody = requestBody
         } catch {
+            print("request error")
             completion(nil)
             return
         }
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
+                print("response error")
                 completion(nil)
                 return
             }
@@ -38,6 +40,7 @@ class OpenAIService {
                 let openAIResponse = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
                 completion(openAIResponse)
             } catch {
+                print("decode error")
                 completion(nil)
             }
         }.resume()
@@ -47,11 +50,6 @@ class OpenAIService {
 struct OpenAIChatBody: Encodable {
     let model: String
     let messages: [OpenAIChatMessage]
-}
-
-struct OpenAIChatMessage: Codable {
-    let role: SenderRole
-    let content: String
 }
 
 enum SenderRole: String, Codable {
@@ -66,4 +64,16 @@ struct OpenAIChatResponse: Decodable {
 
 struct OpenAIChatChoice: Decodable {
     let message: OpenAIChatMessage
+}
+
+struct OpenAIChatMessage: Codable {
+    let role: SenderRole
+    let content: String
+}
+
+struct Question: Codable {
+    let question: String
+    let options: [String]
+    let answer: String
+    let explanation: String
 }
