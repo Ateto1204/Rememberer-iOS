@@ -26,7 +26,7 @@ struct ChatView: View {
 ]
 """
     private let Msg: String = "Generate 5 more multiple-choice questions, and do not answer anything else, just the generated questions."
-    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate 3 multiple-choice questions, and express them in the json format just now. The most important thing is, do not answer any other content except the generated questions: "
+    private let firstMsg: String = "Please parse the above json format first, then use the following article content or related fields to generate 5 multiple-choice questions, and express them in the json format just now. The most important thing is, do not answer any other content except the generated questions: "
     
     @State private var showingHUD: Bool = false
     @State private var isAnimating: Bool = false
@@ -142,8 +142,9 @@ struct ChatView: View {
         
         if questions.count > 0 {
             return VStack {
-                    
-                    
+                
+                TipView(tip, arrowEdge: .bottom)
+
                 Button {
                     showExplanation = true
                     tip.invalidate(reason: .actionPerformed)
@@ -259,21 +260,11 @@ struct ChatView: View {
                 }
             }
             .padding()
-            
-            Button("Next") {
-                if quesNo + 1 < questions.count {
-                    self.quesNo += 1
-                } else {
-                    self.quesNo = 0
-                    viewModel.sendMessage()
-                }
-            }
+            .disable(isAnimating)
         } else {
             viewModel.sendMessage()
             return ContentUnavailableView("Process fail", systemImage: "exclamationmark.triangle.fill")
-        }          
-//            TipView(tip, arrowEdge: .bottom)  
-//        .disabled(isAnimating)
+        }
     }
     
 }
