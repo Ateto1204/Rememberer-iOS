@@ -144,7 +144,7 @@ struct ChatView: View {
             return VStack {
                 
                 TipView(tip, arrowEdge: .bottom)
-
+                    
                 Button {
                     showExplanation = true
                     tip.invalidate(reason: .actionPerformed)
@@ -260,7 +260,7 @@ struct ChatView: View {
                 }
             }
             .padding()
-            .disable(isAnimating)
+            .disabled(isAnimating)
         } else {
             viewModel.sendMessage()
             return ContentUnavailableView("Process fail", systemImage: "exclamationmark.triangle.fill")

@@ -14,23 +14,28 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                HStack {
-                    Text("My Resources")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(EdgeInsets(top: 30, leading: 30, bottom: 20, trailing: 20))
-                    Spacer()
-                }
-                ZStack {
-                    viewController
-                        .padding()
-                        .onAppear(perform: {
-                            viewController.refresh()
-                        })
-                    OperatingButtonView()
+            ZStack {
+                Color.white
+                VStack {
+                    HStack {
+                        Text("My Resources")
+                            .foregroundColor(.black)
+                            .font(.largeTitle)
+                            .bold()
+                            .padding(EdgeInsets(top: 30, leading: 30, bottom: 20, trailing: 20))
+                        Spacer()
+                    }
+                    ZStack {
+                        viewController
+                            .padding()
+                            .onAppear(perform: {
+                                viewController.refresh()
+                            })
+                        OperatingButtonView()
+                    }
                 }
             }
+            .ignoresSafeArea()
         }
     }
     
