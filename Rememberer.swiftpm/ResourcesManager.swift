@@ -35,6 +35,7 @@ class ViewController: UIViewController, ObservableObject {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.backgroundColor = UIColor.white
         
         // Adding tableView to AppView
         view.addSubview(tableView)
@@ -75,6 +76,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         }
         
         cell.textLabel?.text?.append(resources[indexPath.row].title)
+        cell.textLabel?.backgroundColor = UIColor.white
+        cell.textLabel?.textColor? = UIColor.black
         
         return cell
     }

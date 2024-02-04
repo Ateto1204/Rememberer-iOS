@@ -16,12 +16,15 @@ struct ResourceContentView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
+            Color.white
+            
             VStack {
                 
                 // Display resource title
                 HStack(alignment: .top) {
                     
                     Text(resource.title)
+                        .foregroundColor(.black)
                         .font(.largeTitle)
                         .bold()
                     
@@ -32,7 +35,7 @@ struct ResourceContentView: View {
                             .resizable()
                             .scaledToFill()
                             .frame(width: 25, height: 25)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.gray)
                             .padding(.leading, 8)
                     }
                     .sheet(isPresented: $modifyingTitle, content: {
@@ -41,11 +44,13 @@ struct ResourceContentView: View {
                     
                     Spacer()
                 }
-                .padding()
+                .padding(.top, 56)
+                .padding(.leading, 25)
                 
                 // Display tagsView
                 HStack {
                     Text("Tags: ")
+                        .foregroundColor(.black)
                         .padding()
                     
                     if resource.tags.count > 0 {
@@ -106,7 +111,7 @@ struct ResourceContentView: View {
                     // Display content of the resource
                     resourceContentView()
                     
-                    // Submit the content of the resourc to GPT
+                    // Submit the content of the resource to GPT
                     NavigationLink {
                         ChatView(content: resource.content)
                     } label: {
@@ -123,36 +128,45 @@ struct ResourceContentView: View {
                 Spacer()
             }
         }
+        .ignoresSafeArea()
     }
     
     func tagAddingView() -> some View {
-        VStack {
-            Text("Add a new tag")
-            HStack {
-                TextField("New tag", text: $newTag)
-                Button {
-                    if !newTag.isEmpty {
-                        resource.addTag(newTag: newTag)
-                        newTag = ""
-                        isAddingTag = false
-                    } else {
-                        isAlert = true
+        ZStack {
+            Color.white
+            VStack {
+                Text("Add a new tag")
+                    .foregroundColor(.black)
+                HStack {
+                    TextField("New tag", text: $newTag)
+                        .placeholder(when: newTag.isEmpty) {
+                            Text("New tag")
+                                .foregroundColor(.gray)
+                        }
+                    Button {
+                        if !newTag.isEmpty {
+                            resource.addTag(newTag: newTag)
+                            newTag = ""
+                            isAddingTag = false
+                        } else {
+                            isAlert = true
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(.gray)
+                            .padding(.trailing, 12)
                     }
-                } label: {
-                    Image(systemName: "plus")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.secondary)
-                        .padding(.trailing, 12)
-                }
-                .alert("Your input is empty", isPresented: $isAlert) {
-                    Button("OK") {
-                        isAlert = false
+                    .alert("Your input is empty", isPresented: $isAlert) {
+                        Button("OK") {
+                            isAlert = false
+                        }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
     }
     
@@ -231,28 +245,37 @@ struct ResourceContentView: View {
     }
     
     func TitleModifyingView() -> some View {
-        VStack(alignment: .center, spacing: 25) {
-            Text("Enter your new title")
-            TextField(resource.title, text: $newTitle)
-                .padding()
-            Button {
-                if !newTitle.isEmpty {
-                    resource.title = newTitle
-                    newTitle = ""
-                    modifyingTitle = false
-                } else {
-                    isAlert = true
+        ZStack {
+            Color.white
+            VStack(alignment: .center, spacing: 25) {
+                Text("Enter your new title")
+                    .foregroundColor(.black)
+                TextField(resource.title, text: $newTitle)
+                    .foregroundColor(.black)
+                    .placeholder(when: newTitle.isEmpty) {
+                        Text(resource.title)
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                Button {
+                    if !newTitle.isEmpty {
+                        resource.title = newTitle
+                        newTitle = ""
+                        modifyingTitle = false
+                    } else {
+                        isAlert = true
+                    }
+                } label: {
+                    Image(systemName: "checkmark.square.fill")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 30, height: 30)
+                        .padding(.trailing, 12)
                 }
-            } label: {
-                Image(systemName: "checkmark.square.fill")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 30, height: 30)
-                    .padding(.trailing, 12)
-            }
-            .alert("Your input is empty", isPresented: $isAlert) {
-                Button("OK") {
-                    isAlert = false
+                .alert("Your input is empty", isPresented: $isAlert) {
+                    Button("OK") {
+                        isAlert = false
+                    }
                 }
             }
         }
@@ -278,4 +301,17 @@ struct ResourceContentView: View {
         })
     }
     
+}
+
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool, 
+        alignment: Alignment = .leading, 
+        @ViewBuilder placeholder: () -> Content) -> some View {
+            
+        ZStack(alignment: alignment) {
+            placeholder().opacity(shouldShow ? 1 : 0)
+            self
+        }
+    }
 }
