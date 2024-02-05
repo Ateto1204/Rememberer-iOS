@@ -12,11 +12,15 @@ on:
 jobs:
   build:
 
-    runs-on: windowsos-latest
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        path: ../../Rememberer.swiftpm/Resources/Package.swift
     - name: Build
-      run: echo -> Build
+      run: swift build -v
     - name: Run tests
-      run: echo -> Run tests
+      run: swift test -v
+
