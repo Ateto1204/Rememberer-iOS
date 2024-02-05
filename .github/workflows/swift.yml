@@ -18,7 +18,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        path: ../../Rememberer.swiftpm/Resources/Package.swift
+        path: ../../Rememberer.swiftpm/
     - name: Build
       run: swift build -v
     - name: Run tests
