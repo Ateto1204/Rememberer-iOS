@@ -20,7 +20,7 @@ jobs:
       with:
         path: Rememberer.swiftpm/
     - name: Build
-      run: echo Build success
+      run: echo "Build success"
     - name: Run tests
-      run: echo Run tests success
+      run: echo "Run tests success"
 
