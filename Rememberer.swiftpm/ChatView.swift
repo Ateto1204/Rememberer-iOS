@@ -43,81 +43,85 @@ struct ChatView: View {
     }
     
     var body: some View {
-        if networkManager.isNetworkAvailable {
-            ZStack (alignment: .bottom) {
-                VStack {
+        ZStack {
+            Color.white
+            if networkManager.isNetworkAvailable {
+                ZStack (alignment: .bottom) {
+                    VStack {
                         
-                    if viewModel.hasResponse {
-                        if !viewModel.response.isEmpty {
-                            let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
-                            VStack {
-                                questionView(questions: decodedQuestions)
-                                Spacer()
-                                Spacer()
-                            }
-                        }
-                    } else if viewModel.requestCrash {
-//                            ContentUnavailableView(description: "Generating Fail", systemImage: "exclamationmark.triangle.fill")
-                        ContentUnavailableView("Generating Fail", systemImage: "exclamationmark.triangle.fill")
-                    } else {
-                        LottieView(loopMode: .loop, source: "Loading")
-                            .scaleEffect(0.5)
-                    }
-                    Spacer()
-                }
-                .padding(.top, 5)
-                .onAppear(perform: {
-                    viewModel.sendMessage()
-//                    viewModel.updateCurrentInput(input: Msg)
-                })
-                .refreshable {
-                    viewModel.sendMessage()
-                }
-                
-                if showingHUD {
-                    HUD {
-                        if(self.currentAnswerIsCorrect) {
-                            HStack(spacing: 25) {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                    Text("That's correct")
-                                        .padding(.leading, 5)
-                                        .foregroundColor(Color.primary)
+                        if viewModel.hasResponse {
+                            if !viewModel.response.isEmpty {
+                                let decodedQuestions: [Question] = decodeQues(content: viewModel.response)
+                                VStack {
+                                    questionView(questions: decodedQuestions)
+                                    Spacer()
+                                    Spacer()
                                 }
                             }
+                        } else if viewModel.requestCrash {
+                            //                            ContentUnavailableView(description: "Generating Fail", systemImage: "exclamationmark.triangle.fill")
+                            ContentUnavailableView("Generating Fail", systemImage: "exclamationmark.triangle.fill")
                         } else {
-                            HStack {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red)
-                                Text("That's wrong, try again")
-                                    .padding(.leading, 5)
+                            LottieView(loopMode: .loop, source: "Loading")
+                                .scaleEffect(0.5)
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 5)
+                    .onAppear(perform: {
+                        viewModel.sendMessage()
+                        //                    viewModel.updateCurrentInput(input: Msg)
+                    })
+                    .refreshable {
+                        viewModel.sendMessage()
+                    }
+                    
+                    if showingHUD {
+                        HUD {
+                            if(self.currentAnswerIsCorrect) {
+                                HStack(spacing: 25) {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text("That's correct")
+                                            .padding(.leading, 5)
+                                            .foregroundColor(Color.primary)
+                                    }
+                                }
+                            } else {
+                                HStack {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.red)
+                                    Text("That's wrong, try again")
+                                        .padding(.leading, 5)
+                                }
                             }
                         }
+                        .zIndex(1)
+                        .transition(AnyTransition.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.bottom)
                     }
-                    .zIndex(1)
-                    .transition(AnyTransition.move(edge: .bottom).combined(with: .opacity))
-                    .padding(.bottom)
-                }
-                
-                VStack {
-                    Spacer()
-                    HStack {
+                    
+                    VStack {
                         Spacer()
-                        Text("@Generated by GPT for reference only")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom, 8)
-                            .padding(.trailing, 12)
+                        HStack {
+                            Spacer()
+                            Text("@Generated by GPT for reference only")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 8)
+                                .padding(.trailing, 12)
+                        }
                     }
                 }
-            }
-        } else {
-            VStack {
-                ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
-                Spacer()
+            } else {
+                VStack {
+                    ContentUnavailableView("No Internet Connect", systemImage: "wifi.slash")
+                    Spacer()
+                }
             }
         }
+        .ignoresSafeArea()
     }
     
     func decodeQues(content: String) -> [Question] {

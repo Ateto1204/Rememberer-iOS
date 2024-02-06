@@ -121,11 +121,10 @@ struct ResourceContentView: View {
                             .background(Color.accentColor.opacity(0.83))
                             .cornerRadius(12)
                     }
-                    .padding()
+                    .padding(.bottom, 28)
                     
                 }
-                
-                Spacer()
+                .padding(.bottom, 25)
             }
         }
         .ignoresSafeArea()
@@ -217,24 +216,25 @@ struct ResourceContentView: View {
             if !resource.content.isEmpty {
                 ScrollView {
                     HStack {
-                        Spacer()
                         Text(resource.content)
+                            .foregroundColor(.black)
                             .padding()
-                        Spacer()
                     }
                     .padding()
                 }
                 .padding()
             } else {
-                ZStack {
+                VStack {
+                    Spacer()
                     LottieView(loopMode: .loop, source: "UFOAnimation")
-                        .opacity(0.8)
+                        .opacity(0.6)
                         .scaleEffect(0.55)
-                        .padding(.bottom, 100)
+                        .frame(height: 55)
                     Text("Waiting to edit them...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 70)
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                        .opacity(0.9)
+                    Spacer()
                 }
             }
         }
