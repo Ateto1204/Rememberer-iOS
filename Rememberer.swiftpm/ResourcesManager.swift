@@ -35,7 +35,9 @@ class ViewController: UIViewController, ObservableObject {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        tableView.backgroundColor = UIColor.white
+        tableView.backgroundColor = UIColor(red: 226/255, green: 188/255, blue: 207/255, alpha: 1)
+        tableView.separatorColor = UIColor(red: 199/255, green: 103/255, blue: 126/255, alpha: 1)
+        tableView.layer.cornerRadius = 18
         
         // Adding tableView to AppView
         view.addSubview(tableView)
@@ -76,8 +78,9 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         }
         
         cell.textLabel?.text?.append(resources[indexPath.row].title)
-        cell.textLabel?.backgroundColor = UIColor.white
+        cell.textLabel?.backgroundColor = UIColor(red: 190/255, green: 212/255, blue: 229/255, alpha: 1)
         cell.textLabel?.textColor? = UIColor.black
+        cell.backgroundColor = UIColor(red: 190/255, green: 212/255, blue: 229/255, alpha: 1)
         
         return cell
     }
