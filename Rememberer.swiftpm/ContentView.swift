@@ -15,7 +15,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.white
+                Color(red: 227/255, green: 211/255, blue: 228/255) // pale purple
                 VStack {
                     HStack {
                         Text("My Resources")
@@ -51,7 +51,7 @@ struct ContentView: View {
                         .font(.largeTitle)
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.accentColor)
+                        .background(Color(red: 162/255, green: 119/255, blue: 238/255)) // tropical indigo
                         .clipShape(Circle())
                         .padding(.trailing, 18)
                         .popoverTip(addResourcesTip, arrowEdge: .trailing)
@@ -60,26 +60,6 @@ struct ContentView: View {
                 .padding(.bottom, 18)
             }
         }
-    }
-    
-    private func makeScannerView() -> ScannerView {
-        ScannerView(completion: { textPerPage in 
-            if let outputText = textPerPage?.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines) {
-                let newScanData = ScanData(content: outputText)
-                self.texts.append(newScanData)
-            }
-            self.showScannerSheet = false
-        })
-    }
-    
-    private func photoScanner() -> ImagePicker {
-        ImagePicker(selectedImage: $selectedImage, isPickerShowing: $isPickerShowing, completion: { image in
-            if let outputText = image?.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines) {
-                let newScanData = ScanData(content: outputText)
-                self.texts.append(newScanData)
-            }
-            self.isPickerShowing = false
-        })
     }
 }
 

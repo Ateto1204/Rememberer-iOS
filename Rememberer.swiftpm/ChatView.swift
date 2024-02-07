@@ -44,7 +44,7 @@ struct ChatView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            Color(red: 227/255, green: 211/255, blue: 228/255) // pale purple
             if networkManager.isNetworkAvailable {
                 ZStack (alignment: .bottom) {
                     VStack {
