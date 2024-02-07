@@ -15,119 +15,122 @@ struct ResourceContentView: View {
     @State var selectedImage: UIImage?
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.white
-            
-            VStack {
+        NavigationStack {
+            ZStack(alignment: .top) {
+                Color(red: 227/255, green: 211/255, blue: 228/255) // pale purple
                 
-                // Display resource title
-                HStack(alignment: .top) {
+                VStack {
                     
-                    Text(resource.title)
-                        .foregroundColor(.black)
-                        .font(.largeTitle)
-                        .bold()
-                    
-                    Button {
-                        self.modifyingTitle = true
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 25, height: 25)
-                            .foregroundColor(.gray)
-                            .padding(.leading, 8)
+                    // Display resource title
+                    HStack(alignment: .top) {
+                        
+                        Text(resource.title)
+                            .foregroundColor(.black)
+                            .font(.largeTitle)
+                            .bold()
+                        
+                        Button {
+                            self.modifyingTitle = true
+                        } label: {
+                            Image(systemName: "square.and.pencil")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 25, height: 25)
+                                .foregroundColor(.gray)
+                                .padding(.leading, 8)
+                        }
+                        .sheet(isPresented: $modifyingTitle, content: {
+                            TitleModifyingView()
+                        })
+                        
+                        Spacer()
                     }
-                    .sheet(isPresented: $modifyingTitle, content: {
-                        TitleModifyingView()
-                    })
+                    .padding(.top, 56)
+                    .padding(.leading, 25)
                     
-                    Spacer()
-                }
-                .padding(.top, 56)
-                .padding(.leading, 25)
-                
-                // Display tagsView
-                HStack {
-                    Text("Tags: ")
-                        .foregroundColor(.black)
-                        .padding()
-                    
-                    if resource.tags.count > 0 {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(resource.tags, id: \.self) { tag in 
-                                    HStack {
-                                        
-                                        Button {
-                                            if let target = resource.tags.firstIndex(of: tag) {
-                                                resource.tags.remove(at: target)
+                    // Display tagsView
+                    HStack {
+                        Text("Tags: ")
+                            .foregroundColor(.black)
+                            .padding()
+                        
+                        if resource.tags.count > 0 {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(resource.tags, id: \.self) { tag in 
+                                        HStack {
+                                            
+                                            Button {
+                                                if let target = resource.tags.firstIndex(of: tag) {
+                                                    resource.tags.remove(at: target)
+                                                }
+                                            } label: {
+                                                Image(systemName: "xmark")
+                                                    .resizable()
+                                                    .scaledToFill()
+                                                    .frame(width: 11, height: 11)
+                                                    .foregroundColor(.white)
+                                                    .padding(.leading, 9)
                                             }
-                                        } label: {
-                                            Image(systemName: "xmark")
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 11, height: 11)
+                                            
+                                            Text(tag)
                                                 .foregroundColor(.white)
-                                                .padding(.leading, 9)
+                                                .padding(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 8))
                                         }
-                                        
-                                        Text(tag)
-                                            .foregroundColor(.white)
-                                            .padding(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 8))
+                                        .background(Color.secondary)
+                                        .cornerRadius(6)
+                                        .shadow(radius: 10)
                                     }
-                                    .background(Color.secondary)
-                                    .cornerRadius(6)
-                                    .shadow(radius: 10)
                                 }
                             }
+                        } else {
+                            HStack {
+                                Spacer()
+                                Text("none")
+                                    .foregroundColor(.gray)
+                                    .padding()
+                                Spacer()
+                            }
                         }
-                    } else {
-                        HStack {
-                            Spacer()
-                            Text("none")
-                                .foregroundColor(.gray)
+                        
+                        Button {
+                            self.isAddingTag = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .foregroundColor(Color(red: 162/255, green: 119/255, blue: 238/255))
                                 .padding()
-                            Spacer()
                         }
+                        .sheet(isPresented: $isAddingTag, content: {
+                            tagAddingView()
+                        })
                     }
+                    .padding()
                     
-                    Button {
-                        self.isAddingTag = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .padding()
+                    Spacer()
+                    
+                    ZStack(alignment: .bottom) {
+                        
+                        // Display content of the resource
+                        resourceContentView()
+                        
+                        // Submit the content of the resource to GPT
+                        NavigationLink {
+                            ChatView(content: resource.content)
+                        } label: {
+                            Text("Start")
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color(red: 162/255, green: 119/255, blue: 238/255).opacity(0.83))
+                                .cornerRadius(12)
+                        }
+                        .padding(.bottom, 28)
+                        
                     }
-                    .sheet(isPresented: $isAddingTag, content: {
-                        tagAddingView()
-                    })
+                    .padding(.bottom, 25)
                 }
-                .padding()
-                
-                Spacer()
-                
-                ZStack(alignment: .bottom) {
-                    
-                    // Display content of the resource
-                    resourceContentView()
-                    
-                    // Submit the content of the resource to GPT
-                    NavigationLink {
-                        ChatView(content: resource.content)
-                    } label: {
-                        Text("Start")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.accentColor.opacity(0.83))
-                            .cornerRadius(12)
-                    }
-                    .padding(.bottom, 28)
-                    
-                }
-                .padding(.bottom, 25)
             }
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
     }
     
     func tagAddingView() -> some View {
@@ -181,6 +184,7 @@ struct ResourceContentView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 22, height: 22)
+                        .foregroundColor(Color(red: 162/255, green: 119/255, blue: 238/255))
                 }
                 .sheet(isPresented: $showScannerSheet, content: {
                     makeScannerView()
@@ -193,6 +197,7 @@ struct ResourceContentView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 20, height: 20)
+                        .foregroundColor(Color(red: 162/255, green: 119/255, blue: 238/255))
                 }
                 .sheet(isPresented: $isPickerShowing, content: {
                     photoScanner()
@@ -205,6 +210,7 @@ struct ResourceContentView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 25, height: 25)
+                        .foregroundColor(Color(red: 162/255, green: 119/255, blue: 238/255))
                 }
                 .sheet(isPresented: $modifyingContent, content: {
                     Text("Developing...")
@@ -216,9 +222,11 @@ struct ResourceContentView: View {
             if !resource.content.isEmpty {
                 ScrollView {
                     HStack {
+//                        Spacer()
                         Text(resource.content)
                             .foregroundColor(.black)
                             .padding()
+//                        Spacer()
                     }
                     .padding()
                 }
@@ -239,7 +247,7 @@ struct ResourceContentView: View {
             }
         }
         .padding()
-        .border(Color.accentColor)
+        .border(Color(red: 162/255, green: 119/255, blue: 238/255))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding()
     }
