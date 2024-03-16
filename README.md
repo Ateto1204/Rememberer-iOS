@@ -19,7 +19,7 @@ Enable to review and modify the source content.
 </div>
 
 ## Resource Test
-Have a text to enhance your memory.
+Have a test to enhance your memory to the source.
 
 <div style="text-align:center;">
   <img src="Images/C.PNG" alt="Image" style="width:600px;">
