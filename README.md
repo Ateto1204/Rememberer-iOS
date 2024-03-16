@@ -1,6 +1,20 @@
 # Rememberer
-iOS 應用程式開發入門 Final project
 
-基於圖像文字內容生成題目，以互動答題的模式提高學習效率之應用程式。
+- Improve learning efficiency and solidity.
+- Recognize text from image by OCR API.
+- Based on text of recognition result to generate test questions by ChatGPT API.
 
-[Resource Explanation](https://hackmd.io/@Ateto/Skq4tTf_a)
+## Resource Table
+<div style="text-align:center;">
+  <img src="Images/A.PNG" alt="Image" style="width:600px;">
+</div>
+
+## Resource Content
+<div style="text-align:center;">
+  <img src="Images/B.PNG" alt="Image" style="width:600px;">
+</div>
+
+## Resource Test
+<div style="text-align:center;">
+  <img src="Images/C.PNG" alt="Image" style="width:600px;">
+</div>
